@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WK 2026 - Stadions</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #0d1b2e; color: #fff; min-height: 100vh; }
+
+    header { background: linear-gradient(135deg, #003087 0%, #006400 100%); padding: 32px 20px 0; text-align: center; box-shadow: 0 4px 24px rgba(0,0,0,0.6); }
+    header h1 { font-size: 2.2rem; font-weight: 800; text-shadow: 2px 2px 6px rgba(0,0,0,0.4); }
+    header p  { margin-top: 4px; font-size: 0.95rem; opacity: 0.8; letter-spacing: 1px; }
+
+    .site-nav { display: flex; justify-content: center; gap: 2px; margin-top: 16px; padding: 0 20px; }
+    .nav-link { color: rgba(255,255,255,0.65); text-decoration: none; padding: 10px 22px; font-weight: 600; font-size: 0.88rem; letter-spacing: 0.5px; border-bottom: 3px solid transparent; transition: all 0.18s; }
+    .nav-link:hover { color: #fff; }
+    .nav-link.active { color: #FFD700; border-bottom-color: #FFD700; }
+
+    .stats-bar { display: flex; justify-content: center; gap: 36px; padding: 12px 20px; background: rgba(255,255,255,0.05); border-bottom: 1px solid rgba(255,255,255,0.08); flex-wrap: wrap; }
+    .stat { text-align: center; }
+    .stat-value { font-size: 1.5rem; font-weight: 700; color: #FFD700; }
+    .stat-label { font-size: 0.68rem; opacity: 0.6; text-transform: uppercase; letter-spacing: 1px; }
+
+    /* ── Controls ── */
+    .controls { padding: 20px 20px 8px; max-width: 1400px; margin: 0 auto; display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 14px; }
+    .filter-tabs { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+    .filter-btn {
+      padding: 7px 18px; border-radius: 20px; border: 2px solid rgba(255,255,255,0.2);
+      background: transparent; color: rgba(255,255,255,0.75); cursor: pointer;
+      font-size: 0.82rem; font-weight: 600; letter-spacing: 0.4px; transition: all 0.18s;
+    }
+    .filter-btn:hover { background: rgba(255,255,255,0.1); color: #fff; }
+    .filter-btn.active { color: #fff; border-color: transparent; background: #FFD700; color: #000; }
+
+    .sort-select {
+      padding: 7px 14px; border-radius: 20px; border: 2px solid rgba(255,255,255,0.2);
+      background: rgba(255,255,255,0.07); color: #fff; font-size: 0.82rem; font-weight: 600;
+      cursor: pointer; outline: none; transition: border-color 0.2s;
+    }
+    .sort-select:focus { border-color: #FFD700; }
+    .sort-select option { background: #0d1b2e; color: #fff; }
+
+    /* ── Stadium grid ── */
+    .stadiums-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+      gap: 24px;
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 20px 20px 60px;
+    }
+
+    /* ── Stadium card ── */
+    .stadium-card {
+      background: #132844;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 4px 18px rgba(0,0,0,0.35);
+      transition: transform 0.22s ease, box-shadow 0.22s ease;
+      opacity: 1;
+    }
+    .stadium-card:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 12px 36px rgba(0,0,0,0.55);
+    }
+    .stadium-card.hidden {
+      display: none;
+    }
+    .stadium-card.fade-in {
+      animation: fadeIn 0.35s ease forwards;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .card-image {
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      overflow: hidden;
+      background: #0a1628;
+      position: relative;
+    }
+    .carousel-track {
+      display: flex;
+      width: 100%;
+      height: 100%;
+      transition: transform 0.4s ease;
+    }
+    .carousel-track img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      flex-shrink: 0;
+    }
+    .carousel-arrow {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      z-index: 3;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      border: none;
+      background: rgba(0,0,0,0.55);
+      color: #fff;
+      font-size: 1rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+    .card-image:hover .carousel-arrow { opacity: 1; }
+    .carousel-arrow:hover { background: rgba(0,0,0,0.8); }
+    .carousel-arrow.prev { left: 8px; }
+    .carousel-arrow.next { right: 8px; }
+    .carousel-dots {
+      position: absolute;
+      bottom: 8px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 3;
+      display: flex;
+      gap: 6px;
+    }
+    .carousel-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      border: 1.5px solid rgba(255,255,255,0.8);
+      background: transparent;
+      cursor: pointer;
+      padding: 0;
+      transition: background 0.2s;
+    }
+    .carousel-dot.active { background: #FFD700; border-color: #FFD700; }
+
+    .card-badges {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .badge {
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+    }
+    .badge-finale { background: rgba(255,215,0,0.9); color: #000; }
+    .badge-troost { background: rgba(205,127,50,0.9); color: #fff; }
+    .badge-historic { background: rgba(0,48,135,0.9); color: #FFD700; }
+    .badge-matches { background: rgba(0,0,0,0.65); color: #fff; }
+
+    .card-body { padding: 16px 18px 18px; }
+
+    .stadium-name { font-size: 1.2rem; font-weight: 700; margin-bottom: 2px; }
+    .fifa-name { font-size: 0.78rem; opacity: 0.5; margin-bottom: 10px; font-style: italic; }
+
+    .city-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 12px;
+      font-size: 0.88rem;
+    }
+    .city-row img { width: 22px; height: 16px; object-fit: cover; border-radius: 2px; box-shadow: 0 1px 3px rgba(0,0,0,0.3); }
+
+    .capacity-section { margin-bottom: 14px; }
+    .capacity-header {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.78rem;
+      margin-bottom: 4px;
+    }
+    .capacity-label { opacity: 0.5; text-transform: uppercase; letter-spacing: 0.5px; }
+    .capacity-value { font-weight: 700; color: #FFD700; }
+    .capacity-bar {
+      width: 100%;
+      height: 6px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+    .capacity-fill {
+      height: 100%;
+      border-radius: 3px;
+      background: linear-gradient(90deg, #003087, #FFD700);
+      transition: width 0.6s ease;
+    }
+
+    .facts-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+    .fact {
+      background: rgba(255,255,255,0.05);
+      padding: 8px 10px;
+      border-radius: 8px;
+    }
+    .fact-label { font-size: 0.65rem; opacity: 0.45; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px; }
+    .fact-value { font-size: 0.8rem; font-weight: 600; }
+    .fact.full-width { grid-column: 1 / -1; }
+
+    .card-desc {
+      font-size: 0.82rem;
+      line-height: 1.55;
+      opacity: 0.7;
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .no-results {
+      text-align: center;
+      padding: 60px 20px;
+      opacity: 0.4;
+      font-size: 1.1rem;
+      grid-column: 1 / -1;
+    }
+
+    @media (max-width: 900px) {
+      .stadiums-grid { grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); }
+    }
+    @media (max-width: 600px) {
+      header h1 { font-size: 1.9rem; }
+      .stats-bar { gap: 20px; }
+      .stadiums-grid { grid-template-columns: 1fr; padding: 16px 12px 60px; }
+      .nav-link { padding: 10px 14px; font-size: 0.78rem; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>&#9917; WK 2026 - Stadions</h1>
+  <p>16 speelsteden in 3 landen</p>
+  <nav class="site-nav">
+    <a href="index.html" class="nav-link">&#127757; Landen</a>
+    <a href="groepen.html" class="nav-link">&#128202; Groepen</a>
+    <a href="schema.html" class="nav-link">&#128197; Groepsfase</a>
+    <a href="knockout.html" class="nav-link">&#127942; Knockout</a>
+    <a href="stadions.html" class="nav-link active">&#127951; Stadions</a>
+    <a href="scheidsrechters.html" class="nav-link">🎯 Scheidsrechters</a>
+  </nav>
+</header>
+
+<div class="stats-bar">
+  <div class="stat"><div class="stat-value">16</div><div class="stat-label">Stadions</div></div>
+  <div class="stat"><div class="stat-value">3</div><div class="stat-label">Landen</div></div>
+  <div class="stat"><div class="stat-value">104</div><div class="stat-label">Wedstrijden</div></div>
+  <div class="stat"><div class="stat-value">1.1M+</div><div class="stat-label">Capaciteit</div></div>
+</div>
+
+<div class="controls">
+  <div class="filter-tabs">
+    <button class="filter-btn active" data-filter="all">Alle</button>
+    <button class="filter-btn" data-filter="us">&#127482;&#127480; VS (11)</button>
+    <button class="filter-btn" data-filter="mx">&#127474;&#127485; Mexico (3)</button>
+    <button class="filter-btn" data-filter="ca">&#127464;&#127462; Canada (2)</button>
+  </div>
+  <select class="sort-select" id="sortSelect">
+    <option value="capacity-desc">Op capaciteit (aflopend)</option>
+    <option value="city-asc">Op stad (A-Z)</option>
+  </select>
+</div>
+
+<div class="stadiums-grid" id="stadiumsGrid"></div>
+
+<script src="data/matches.js"></script>
+<script src="data/teams.js"></script>
+<script>
+(function() {
+  const venueDetails = {
+    att: {
+      name: "AT&T Stadium",
+      fifaName: "Dallas Stadium",
+      city: "Dallas",
+      location: "Arlington, Texas",
+      country: "us",
+      capacity: 94000,
+      opened: 2009,
+      clubs: "Dallas Cowboys (NFL)",
+      type: "Overdekt (intrekbaar dak)",
+      image: "images/att.jpg",
+      images: ["images/att_ext.jpg", "images/att.jpg", "images/att_3.jpg", "images/att_4.jpg", "images/att_5.jpg"],
+      description: "Het imposante AT&T Stadium, met zijn gigantische HD-scherm, is een van de grootste overdekte stadions ter wereld. Het dak kan in 12 minuten volledig worden geopend of gesloten."
+    },
+    azteca: {
+      name: "Estadio Azteca",
+      fifaName: "Mexico City Stadium",
+      city: "Mexico-Stad",
+      location: "Mexico-Stad",
+      country: "mx",
+      capacity: 83000,
+      opened: 1966,
+      clubs: "Club América, Cruz Azul (Liga MX)",
+      type: "Open dak",
+      image: "images/azteca.jpg",
+      images: ["images/azteca_ext.jpg", "images/azteca.jpg", "images/azteca_3.jpg", "images/azteca_4.jpg", "images/azteca_5.jpg"],
+      description: "Het legendarische Estadio Azteca is het enige stadion dat twee WK-finales heeft gehost (1970 en 1986). Hier scoorde Maradona zijn beroemde 'Hand van God' en het 'Doelpunt van de Eeuw'. Dit wordt het eerste stadion dat drie WK-toernooien huisvest."
+    },
+    metlife: {
+      name: "MetLife Stadium",
+      fifaName: "New York New Jersey Stadium",
+      city: "New York/New Jersey",
+      location: "East Rutherford, New Jersey",
+      country: "us",
+      capacity: 82500,
+      opened: 2010,
+      clubs: "NY Giants, NY Jets (NFL)",
+      type: "Open dak",
+      image: "images/metlife.jpg",
+      images: ["images/metlife_ext.jpg", "images/metlife.jpg", "images/metlife_3.jpg", "images/metlife_4.jpg", "images/metlife_5.jpg"],
+      description: "MetLife Stadium is het toneel van de WK-finale op 19 juli 2026. Het stadion in de schaduw van Manhattan wordt gedeeld door twee NFL-teams en is een van de duurste stadions ooit gebouwd ($1,6 miljard)."
+    },
+    mercedesbenz: {
+      name: "Mercedes-Benz Stadium",
+      fifaName: "Atlanta Stadium",
+      city: "Atlanta",
+      location: "Atlanta, Georgia",
+      country: "us",
+      capacity: 75000,
+      opened: 2017,
+      clubs: "Atlanta Falcons (NFL), Atlanta United (MLS)",
+      type: "Overdekt (intrekbaar dak)",
+      image: "images/mercedesbenz.jpg",
+      images: ["images/mercedesbenz_ext.jpg", "images/mercedesbenz.jpg", "images/mercedesbenz_3.jpg", "images/mercedesbenz_4.jpg", "images/mercedesbenz_5.jpg"],
+      description: "Het futuristische Mercedes-Benz Stadium heeft een uniek achthoekig intrekbaar dak, geïnspireerd op het Pantheon in Rome. Atlanta United trekt er regelmatig 70.000+ fans — een record voor MLS."
+    },
+    arrowhead: {
+      name: "Arrowhead Stadium",
+      fifaName: "Kansas City Stadium",
+      city: "Kansas City",
+      location: "Kansas City, Missouri",
+      country: "us",
+      capacity: 73000,
+      opened: 1972,
+      clubs: "Kansas City Chiefs (NFL)",
+      type: "Open dak",
+      image: "images/arrowhead.jpg",
+      images: ["images/arrowhead_ext.jpg", "images/arrowhead.jpg", "images/arrowhead_3.jpg", "images/arrowhead_4.jpg", "images/arrowhead_5.jpg"],
+      description: "Arrowhead Stadium, de thuisbasis van de Kansas City Chiefs, staat bekend als een van de luidste stadions ter wereld. Het Guinness-record voor luidste stadiongeluid (142,2 dB) werd hier gevestigd."
+    },
+    nrg: {
+      name: "NRG Stadium",
+      fifaName: "Houston Stadium",
+      city: "Houston",
+      location: "Houston, Texas",
+      country: "us",
+      capacity: 72000,
+      opened: 2002,
+      clubs: "Houston Texans (NFL)",
+      type: "Overdekt (intrekbaar dak)",
+      image: "images/nrg.jpg",
+      images: ["images/nrg_ext.jpg", "images/nrg.jpg", "images/nrg_3.jpg", "images/nrg_4.jpg", "images/nrg_5.jpg"],
+      description: "NRG Stadium was het eerste NFL-stadion met een volledig intrekbaar dak. Het stadion in Houston heeft eerder de Super Bowl gehost en biedt airconditioning tegen de Texaanse hitte."
+    },
+    levis: {
+      name: "Levi's Stadium",
+      fifaName: "San Francisco Bay Area Stadium",
+      city: "San Francisco",
+      location: "Santa Clara, Californië",
+      country: "us",
+      capacity: 71000,
+      opened: 2014,
+      clubs: "San Francisco 49ers (NFL), SJ Earthquakes (MLS)",
+      type: "Open dak",
+      image: "images/levis.jpg",
+      images: ["images/levis_ext.jpg", "images/levis.jpg", "images/levis_3.jpg", "images/levis_4.jpg", "images/levis_5.jpg"],
+      description: "Levi's Stadium in Silicon Valley is een van de meest technologisch geavanceerde stadions ter wereld. Het heeft eerder de Super Bowl 50 en de Copa América Centenario-finale gehost."
+    },
+    sofi: {
+      name: "SoFi Stadium",
+      fifaName: "Los Angeles Stadium",
+      city: "Los Angeles",
+      location: "Inglewood, Californië",
+      country: "us",
+      capacity: 70000,
+      opened: 2020,
+      clubs: "LA Rams, LA Chargers (NFL)",
+      type: "Semi-overdekt (vast transparant dak)",
+      image: "images/sofi.jpg",
+      images: ["images/sofi_ext.jpg", "images/sofi.jpg", "images/sofi_3.jpg", "images/sofi_4.jpg", "images/sofi_5.jpg"],
+      description: "SoFi Stadium, met een prijskaartje van $5,5 miljard het duurste stadion ooit gebouwd, heeft een uniek transparant dak. Het stadion host de openingswedstrijd van de VS op 12 juni 2026."
+    },
+    lincoln: {
+      name: "Lincoln Financial Field",
+      fifaName: "Philadelphia Stadium",
+      city: "Philadelphia",
+      location: "Philadelphia, Pennsylvania",
+      country: "us",
+      capacity: 69000,
+      opened: 2003,
+      clubs: "Philadelphia Eagles (NFL), Philadelphia Union (MLS)",
+      type: "Open dak",
+      image: "images/lincoln.jpg",
+      images: ["images/lincoln_ext.jpg", "images/lincoln.jpg", "images/lincoln_3.jpg", "images/lincoln_4.jpg", "images/lincoln_5.jpg"],
+      description: "Lincoln Financial Field, bijnaam 'The Linc', staat bekend om zijn intense sfeer. Het stadion heeft eerder Copa América 2016-wedstrijden gehost en is een van de meest energieke arena's in Amerika."
+    },
+    lumen: {
+      name: "Lumen Field",
+      fifaName: "Seattle Stadium",
+      city: "Seattle",
+      location: "Seattle, Washington",
+      country: "us",
+      capacity: 69000,
+      opened: 2002,
+      clubs: "Seattle Seahawks (NFL), Seattle Sounders (MLS)",
+      type: "Open dak (gedeeltelijk overdekt)",
+      image: "images/lumen.jpg",
+      images: ["images/lumen_ext.jpg", "images/lumen.jpg", "images/lumen_3.jpg", "images/lumen_4.jpg", "images/lumen_5.jpg"],
+      description: "Lumen Field, thuisbasis van de Seattle Sounders, is bekend om zijn oordovende sfeer. De voetbalcultuur in Seattle is een van de sterkste in Noord-Amerika, met gemiddeld 30.000+ fans per MLS-wedstrijd."
+    },
+    gillette: {
+      name: "Gillette Stadium",
+      fifaName: "Boston Stadium",
+      city: "Boston",
+      location: "Foxborough, Massachusetts",
+      country: "us",
+      capacity: 65000,
+      opened: 2002,
+      clubs: "New England Patriots (NFL), NE Revolution (MLS)",
+      type: "Open dak",
+      image: "images/gillette.jpg",
+      images: ["images/gillette_ext.jpg", "images/gillette.jpg", "images/gillette_3.jpg", "images/gillette_4.jpg", "images/gillette_5.jpg"],
+      description: "Gillette Stadium, gelegen nabij Boston, is de thuisbasis van de legendarische New England Patriots. Het stadion ligt in Foxborough en heeft eerder internationale voetbalwedstrijden gehost."
+    },
+    hardrock: {
+      name: "Hard Rock Stadium",
+      fifaName: "Miami Stadium",
+      city: "Miami",
+      location: "Miami Gardens, Florida",
+      country: "us",
+      capacity: 65000,
+      opened: 1987,
+      clubs: "Miami Dolphins (NFL), Inter Miami (MLS)",
+      type: "Open dak (gedeeltelijk overdekt)",
+      image: "images/hardrock.jpg",
+      images: ["images/hardrock_ext.jpg", "images/hardrock.jpg", "images/hardrock_3.jpg", "images/hardrock_4.jpg", "images/hardrock_5.jpg"],
+      description: "Hard Rock Stadium in Miami is de thuisbasis van Inter Miami van Lionel Messi. Het stadion host ook jaarlijks het Miami Open tennis en de troostfinale van het WK 2026 op 18 juli."
+    },
+    bcplace: {
+      name: "BC Place",
+      fifaName: "BC Place Vancouver",
+      city: "Vancouver",
+      location: "Vancouver, British Columbia",
+      country: "ca",
+      capacity: 54000,
+      opened: 1983,
+      clubs: "Vancouver Whitecaps (MLS), BC Lions (CFL)",
+      type: "Overdekt (intrekbaar dak)",
+      image: "images/bcplace.jpg",
+      images: ["images/bcplace_ext.jpg", "images/bcplace.jpg", "images/bcplace_3.jpg", "images/bcplace_4.jpg", "images/bcplace_5.jpg"],
+      description: "BC Place in het hart van Vancouver heeft eerder het FIFA Vrouwen-WK 2015 gehost. Het stadion kreeg in 2011 een nieuw intrekbaar dak en biedt uitzicht op de bergen van North Shore."
+    },
+    bbva: {
+      name: "Estadio BBVA",
+      fifaName: "Estadio Monterrey",
+      city: "Monterrey",
+      location: "Guadalupe, Nuevo León",
+      country: "mx",
+      capacity: 53500,
+      opened: 2015,
+      clubs: "CF Monterrey (Liga MX)",
+      type: "Open dak",
+      image: "images/bbva.jpg",
+      images: ["images/bbva_ext.jpg", "images/bbva.jpg", "images/bbva_3.jpg", "images/bbva_4.jpg", "images/bbva_5.jpg"],
+      description: "Het moderne Estadio BBVA werd ontworpen door architect Tadao Ando en is een van de mooiste stadions in Mexico. De gevel weerspiegelt de bergen van Monterrey."
+    },
+    akron: {
+      name: "Estadio Akron",
+      fifaName: "Estadio Guadalajara",
+      city: "Guadalajara",
+      location: "Zapopan, Jalisco",
+      country: "mx",
+      capacity: 48000,
+      opened: 2010,
+      clubs: "CD Guadalajara / Chivas (Liga MX)",
+      type: "Open dak",
+      image: "images/akron.jpg",
+      images: ["images/akron_ext.jpg", "images/akron.jpg", "images/akron_3.jpg", "images/akron_4.jpg", "images/akron_5.jpg"],
+      description: "Estadio Akron, thuisbasis van het populaire Chivas de Guadalajara, heeft een vulkaanvormig ontwerp. Guadalajara was ook gaststad tijdens het WK 1970 en het WK 1986."
+    },
+    bmo: {
+      name: "BMO Field",
+      fifaName: "Toronto Stadium",
+      city: "Toronto",
+      location: "Toronto, Ontario",
+      country: "ca",
+      capacity: 45000,
+      opened: 2007,
+      clubs: "Toronto FC (MLS), Toronto Argonauts (CFL)",
+      type: "Open dak",
+      image: "images/bmo.jpg",
+      images: ["images/bmo_ext.jpg", "images/bmo.jpg", "images/bmo_3.jpg", "images/bmo_4.jpg", "images/bmo_5.jpg"],
+      description: "BMO Field is speciaal uitgebreid van 30.000 naar 45.500 plaatsen voor het WK 2026. Het is een van de weinige voetbalspecifieke stadions in dit toernooi en de thuisbasis van Toronto FC."
+    }
+  };
+
+  const MAX_CAPACITY = 94000;
+  const countryNames = { us: "Verenigde Staten", mx: "Mexico", ca: "Canada" };
+
+  // Count matches per venue from matchesData
+  function countMatchesPerVenue() {
+    const counts = {};
+    if (typeof matchesData !== "undefined") {
+      // Group stage matches
+      if (matchesData.matches) {
+        matchesData.matches.forEach(function(m) {
+          counts[m.venue] = (counts[m.venue] || 0) + 1;
+        });
+      }
+      // Knockout rounds — estimate distribution across venues
+      // The data only specifies the finale venue explicitly
+      if (matchesData.knockoutRounds) {
+        matchesData.knockoutRounds.forEach(function(r) {
+          if (r.venue) {
+            counts[r.venue] = (counts[r.venue] || 0) + 1;
+          }
+        });
+      }
+    }
+    return counts;
+  }
+
+  const matchCounts = countMatchesPerVenue();
+
+  // Special badges
+  const specialBadges = {
+    metlife: { text: "🏆 WK-Finale", cls: "badge-finale" },
+    hardrock: { text: "🥉 Troostfinale", cls: "badge-troost" },
+    azteca: { text: "⭐ Historisch", cls: "badge-historic" }
+  };
+
+  function formatCapacity(n) {
+    return n.toLocaleString("nl-NL");
+  }
+
+  function createCard(key, venue, index) {
+    const mc = matchCounts[key] || 0;
+    const pct = Math.round((venue.capacity / MAX_CAPACITY) * 100);
+    const imgs = venue.images || [venue.image];
+    const hasMultiple = imgs.length > 1;
+    const cid = "carousel-" + key;
+
+    let badgesHtml = '';
+    if (specialBadges[key]) {
+      badgesHtml += '<span class="badge ' + specialBadges[key].cls + '">' + specialBadges[key].text + '</span>';
+    }
+    if (mc > 0) {
+      badgesHtml += '<span class="badge badge-matches">⚽ ' + mc + ' wedstrijd' + (mc !== 1 ? 'en' : '') + '</span>';
+    }
+
+    var imgsHtml = imgs.map(function(src) {
+      return '<img src="' + src + '" alt="' + venue.name + '">';
+    }).join('');
+
+    var arrowsHtml = hasMultiple
+      ? '<button class="carousel-arrow prev" data-cid="' + cid + '" data-dir="-1">&#10094;</button>' +
+        '<button class="carousel-arrow next" data-cid="' + cid + '" data-dir="1">&#10095;</button>'
+      : '';
+
+    var dotsHtml = '';
+    if (hasMultiple) {
+      dotsHtml = '<div class="carousel-dots">';
+      for (var i = 0; i < imgs.length; i++) {
+        dotsHtml += '<button class="carousel-dot' + (i === 0 ? ' active' : '') + '" data-cid="' + cid + '" data-idx="' + i + '"></button>';
+      }
+      dotsHtml += '</div>';
+    }
+
+    var card = document.createElement("div");
+    card.className = "stadium-card fade-in";
+    card.dataset.country = venue.country;
+    card.dataset.city = venue.city;
+    card.dataset.capacity = venue.capacity;
+    card.style.animationDelay = (index * 0.06) + "s";
+
+    card.innerHTML =
+      '<div class="card-image" id="' + cid + '" data-idx="0" data-count="' + imgs.length + '">' +
+        '<div class="carousel-track">' + imgsHtml + '</div>' +
+        arrowsHtml +
+        dotsHtml +
+        (badgesHtml ? '<div class="card-badges">' + badgesHtml + '</div>' : '') +
+      '</div>' +
+      '<div class="card-body">' +
+        '<div class="stadium-name">' + venue.name + '</div>' +
+        '<div class="fifa-name">' + venue.fifaName + '</div>' +
+        '<div class="city-row">' +
+          '<img src="https://flagcdn.com/w40/' + venue.country + '.png" alt="' + countryNames[venue.country] + '">' +
+          '<span>' + venue.city + ', ' + countryNames[venue.country] + '</span>' +
+        '</div>' +
+        '<div class="capacity-section">' +
+          '<div class="capacity-header">' +
+            '<span class="capacity-label">Capaciteit</span>' +
+            '<span class="capacity-value">' + formatCapacity(venue.capacity) + '</span>' +
+          '</div>' +
+          '<div class="capacity-bar"><div class="capacity-fill" style="width:' + pct + '%"></div></div>' +
+        '</div>' +
+        '<div class="facts-grid">' +
+          '<div class="fact"><div class="fact-label">Geopend</div><div class="fact-value">' + venue.opened + '</div></div>' +
+          '<div class="fact"><div class="fact-label">WK wedstrijden</div><div class="fact-value">' + (mc > 0 ? mc : '–') + '</div></div>' +
+          '<div class="fact full-width"><div class="fact-label">Vaste clubs</div><div class="fact-value">' + venue.clubs + '</div></div>' +
+          '<div class="fact full-width"><div class="fact-label">Type</div><div class="fact-value">' + venue.type + '</div></div>' +
+        '</div>' +
+        '<div class="card-desc">' + venue.description + '</div>' +
+      '</div>';
+
+    return card;
+  }
+
+  // Carousel navigation
+  function goToSlide(cid, idx) {
+    var container = document.getElementById(cid);
+    if (!container) return;
+    var count = parseInt(container.dataset.count);
+    if (idx < 0) idx = count - 1;
+    if (idx >= count) idx = 0;
+    container.dataset.idx = idx;
+    var track = container.querySelector(".carousel-track");
+    track.style.transform = "translateX(-" + (idx * 100) + "%)";
+    var dots = container.querySelectorAll(".carousel-dot");
+    dots.forEach(function(d, i) { d.classList.toggle("active", i === idx); });
+  }
+
+  document.addEventListener("click", function(e) {
+    var arrow = e.target.closest(".carousel-arrow");
+    if (arrow) {
+      e.stopPropagation();
+      var cid = arrow.dataset.cid;
+      var dir = parseInt(arrow.dataset.dir);
+      var container = document.getElementById(cid);
+      var cur = parseInt(container.dataset.idx);
+      goToSlide(cid, cur + dir);
+      return;
+    }
+    var dot = e.target.closest(".carousel-dot");
+    if (dot) {
+      e.stopPropagation();
+      goToSlide(dot.dataset.cid, parseInt(dot.dataset.idx));
+    }
+  });
+
+  // Build sorted venue entries
+  function getSortedVenues(sortBy) {
+    var entries = Object.entries(venueDetails);
+    if (sortBy === "capacity-desc") {
+      entries.sort(function(a, b) { return b[1].capacity - a[1].capacity; });
+    } else if (sortBy === "city-asc") {
+      entries.sort(function(a, b) { return a[1].city.localeCompare(b[1].city, "nl"); });
+    }
+    return entries;
+  }
+
+  var grid = document.getElementById("stadiumsGrid");
+  var currentFilter = "all";
+  var currentSort = "capacity-desc";
+
+  function renderCards() {
+    grid.innerHTML = "";
+    var entries = getSortedVenues(currentSort);
+    var idx = 0;
+    var anyVisible = false;
+    entries.forEach(function(entry) {
+      var key = entry[0], venue = entry[1];
+      if (currentFilter !== "all" && venue.country !== currentFilter) return;
+      grid.appendChild(createCard(key, venue, idx));
+      idx++;
+      anyVisible = true;
+    });
+    if (!anyVisible) {
+      grid.innerHTML = '<div class="no-results">Geen stadions gevonden</div>';
+    }
+  }
+
+  // Filter buttons
+  document.querySelectorAll(".filter-btn").forEach(function(btn) {
+    btn.addEventListener("click", function() {
+      document.querySelectorAll(".filter-btn").forEach(function(b) { b.classList.remove("active"); });
+      btn.classList.add("active");
+      currentFilter = btn.dataset.filter;
+      renderCards();
+    });
+  });
+
+  // Sort select
+  document.getElementById("sortSelect").addEventListener("change", function() {
+    currentSort = this.value;
+    renderCards();
+  });
+
+  // Initial render
+  renderCards();
+})();
+</script>
+</body>
+</html>

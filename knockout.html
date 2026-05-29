@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WK 2026 - Knockout Fase</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #0d1b2e; color: #fff; min-height: 100vh; }
+
+    header { background: linear-gradient(135deg, #003087 0%, #006400 100%); padding: 32px 20px 0; text-align: center; box-shadow: 0 4px 24px rgba(0,0,0,0.6); }
+    header h1 { font-size: 2.2rem; font-weight: 800; text-shadow: 2px 2px 6px rgba(0,0,0,0.4); }
+    header p  { margin-top: 4px; font-size: 0.95rem; opacity: 0.8; letter-spacing: 1px; }
+    .site-nav { display: flex; justify-content: center; gap: 2px; margin-top: 16px; padding: 0 20px; flex-wrap: wrap; }
+    .nav-link { color: rgba(255,255,255,0.65); text-decoration: none; padding: 10px 22px; font-weight: 600; font-size: 0.88rem; letter-spacing: 0.5px; border-bottom: 3px solid transparent; transition: all 0.18s; }
+    .nav-link:hover { color: #fff; }
+    .nav-link.active { color: #FFD700; border-bottom-color: #FFD700; }
+
+    .stats-bar { display: flex; justify-content: center; gap: 36px; padding: 12px 20px; background: rgba(255,255,255,0.05); border-bottom: 1px solid rgba(255,255,255,0.08); flex-wrap: wrap; }
+    .stat { text-align: center; }
+    .stat-value { font-size: 1.5rem; font-weight: 700; color: #FFD700; }
+    .stat-label { font-size: 0.68rem; opacity: 0.6; text-transform: uppercase; letter-spacing: 1px; }
+
+    /* ── Bracket Container ── */
+    .bracket-wrapper {
+      overflow-x: auto;
+      padding: 30px 20px 60px;
+      -webkit-overflow-scrolling: touch;
+    }
+    .bracket-scroll-hint {
+      text-align: center; padding: 8px; font-size: 0.75rem; opacity: 0.4;
+      display: none;
+    }
+    @media (max-width: 1400px) {
+      .bracket-scroll-hint { display: block; }
+    }
+
+    .bracket {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 1500px;
+      gap: 0;
+    }
+
+    /* ── Round Column ── */
+    .round {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+    }
+
+    .round-label {
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      color: #FFD700;
+      margin-bottom: 12px;
+      white-space: nowrap;
+      opacity: 0.8;
+    }
+
+    .round-matches {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 0;
+    }
+
+    /* ── Match Slot ── */
+    .match-slot {
+      display: flex;
+      flex-direction: column;
+      width: 150px;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 6px;
+      overflow: hidden;
+      transition: all 0.2s;
+      position: relative;
+    }
+    .match-slot:hover {
+      background: rgba(255,255,255,0.1);
+      border-color: rgba(255,215,0,0.4);
+      transform: scale(1.03);
+      z-index: 10;
+    }
+
+    .match-slot .match-num {
+      font-size: 0.55rem;
+      text-align: center;
+      padding: 2px;
+      background: rgba(255,215,0,0.12);
+      color: #FFD700;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+    }
+
+    .match-slot .match-date {
+      font-size: 0.5rem;
+      text-align: center;
+      padding: 1px;
+      color: rgba(255,255,255,0.4);
+    }
+
+    .team-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 6px;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      min-height: 24px;
+    }
+    .team-row:last-child { border-bottom: none; }
+
+    .team-row img {
+      width: 20px; height: 14px;
+      object-fit: cover; border-radius: 2px;
+      flex-shrink: 0;
+    }
+    .team-row .team-label {
+      font-size: 0.68rem;
+      font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      flex: 1;
+    }
+    .team-row .team-label.tbd { color: rgba(255,255,255,0.35); font-style: italic; }
+    .team-row .team-label.group-pos { color: rgba(255,255,255,0.6); }
+
+    /* ── Connector lines ── */
+    .connector-right {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      width: 24px;
+      position: relative;
+    }
+    .connector-left {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      width: 24px;
+      position: relative;
+    }
+
+    /* ── Spacer between matches in a round ── */
+    .match-spacer-r32  { height: 8px; }
+    .match-pair-gap-r32 { height: 16px; }
+    .match-spacer-r16  { height: 64px; }
+    .match-pair-gap-r16 { height: 16px; }
+    .match-spacer-qf   { height: 176px; }
+    .match-spacer-sf   { height: 400px; }
+
+    /* ── Final slot ── */
+    .final-column {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      margin: 0 10px;
+    }
+    .final-slot {
+      width: 170px;
+      background: linear-gradient(135deg, rgba(255,215,0,0.15), rgba(255,215,0,0.05));
+      border: 2px solid rgba(255,215,0,0.4);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    .final-slot:hover {
+      border-color: #FFD700;
+      transform: scale(1.05);
+    }
+    .final-slot .match-num {
+      font-size: 0.65rem;
+      background: rgba(255,215,0,0.2);
+      padding: 4px;
+      text-align: center;
+      color: #FFD700;
+      font-weight: 800;
+    }
+    .final-slot .team-row { min-height: 28px; padding: 5px 8px; }
+    .final-slot .team-row .team-label { font-size: 0.78rem; }
+    .final-slot .team-row img { width: 24px; height: 16px; }
+    .final-slot .match-date { font-size: 0.55rem; padding: 2px; color: rgba(255,255,255,0.5); }
+
+    .trophy-icon { font-size: 2.5rem; margin-bottom: 8px; }
+    .final-label { font-size: 0.85rem; font-weight: 800; letter-spacing: 2px; color: #FFD700; margin-bottom: 4px; }
+    .final-venue { font-size: 0.6rem; opacity: 0.5; margin-top: 4px; margin-bottom: 8px; }
+
+    .third-place-section {
+      max-width: 300px;
+      margin: 0 auto;
+    }
+    .third-place-slot {
+      width: 170px;
+      margin: 0 auto;
+      background: rgba(205,127,50,0.08);
+      border: 1px solid rgba(205,127,50,0.3);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .third-place-slot .match-num {
+      background: rgba(205,127,50,0.15);
+      color: #cd7f32;
+    }
+
+    /* ── SVG Connectors ── */
+    .bracket-svg {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 600px) {
+      header h1 { font-size: 1.5rem; }
+      .match-slot { width: 130px; }
+      .team-row .team-label { font-size: 0.6rem; }
+      .match-slot .match-num { font-size: 0.5rem; }
+      .final-slot { width: 150px; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>&#9917; WK 2026 Voorspelling</h1>
+  <p>FIFA Wereldkampioenschap &middot; USA &middot; Canada &middot; Mexico</p>
+  <nav class="site-nav">
+    <a href="index.html" class="nav-link">&#127757; Landen</a>
+    <a href="groepen.html" class="nav-link">&#128202; Groepen</a>
+    <a href="schema.html" class="nav-link">&#128197; Groepsfase</a>
+    <a href="knockout.html" class="nav-link active">&#127942; Knockout</a>
+    <a href="stadions.html" class="nav-link">&#127951; Stadions</a>
+    <a href="scheidsrechters.html" class="nav-link">🎯 Scheidsrechters</a>
+  </nav>
+</header>
+
+<div class="stats-bar">
+  <div class="stat"><div class="stat-value">32</div><div class="stat-label">Teams</div></div>
+  <div class="stat"><div class="stat-value">16</div><div class="stat-label">Ronde van 32</div></div>
+  <div class="stat"><div class="stat-value">8</div><div class="stat-label">Achtste Finales</div></div>
+  <div class="stat"><div class="stat-value">4</div><div class="stat-label">Kwartfinales</div></div>
+  <div class="stat"><div class="stat-value">1</div><div class="stat-label">Finale</div></div>
+</div>
+
+<div class="bracket-scroll-hint">&#8592; Scroll horizontaal voor het volledige schema &#8594;</div>
+
+<div class="bracket-wrapper">
+  <div class="bracket" id="bracket"></div>
+</div>
+
+<!-- Third place below bracket -->
+<div class="final-column" style="padding-bottom:40px;">
+  <div style="text-align:center; margin-bottom:10px;">
+    <span style="font-size:0.75rem; font-weight:700; letter-spacing:1.5px; color:#cd7f32;">TROOSTFINALE</span>
+  </div>
+  <div class="third-place-slot" id="third-place"></div>
+</div>
+
+<script src="data/teams.js"></script>
+<script>
+(function() {
+
+  // ── Knockout match data from FIFA official bracket ──
+  var knockoutMatches = {
+    // ROUND OF 32 (16 matches)
+    73: { id:73, home:'2A', away:'2B', date:'28 jun', venue:'Inglewood' },
+    74: { id:74, home:'1E', away:'3e ABCDF', date:'29 jun', venue:'Foxborough' },
+    75: { id:75, home:'1F', away:'2C', date:'29 jun', venue:'Monterrey' },
+    76: { id:76, home:'1C', away:'2F', date:'29 jun', venue:'Houston' },
+    77: { id:77, home:'1I', away:'3e CDFGH', date:'30 jun', venue:'East Rutherford' },
+    78: { id:78, home:'2E', away:'2I', date:'30 jun', venue:'Arlington' },
+    79: { id:79, home:'1A', away:'3e CEFHI', date:'30 jun', venue:'Mexico-Stad' },
+    80: { id:80, home:'1L', away:'3e EHIJK', date:'1 jul', venue:'Atlanta' },
+    81: { id:81, home:'1D', away:'3e BEFIJ', date:'1 jul', venue:'Seattle' },
+    82: { id:82, home:'1G', away:'3e AEHIJ', date:'1 jul', venue:'Santa Clara' },
+    83: { id:83, home:'2K', away:'2L', date:'2 jul', venue:'Toronto' },
+    84: { id:84, home:'1H', away:'2J', date:'2 jul', venue:'Inglewood' },
+    85: { id:85, home:'1B', away:'3e EFGIJ', date:'2 jul', venue:'Vancouver' },
+    86: { id:86, home:'1J', away:'2H', date:'3 jul', venue:'Miami' },
+    87: { id:87, home:'1K', away:'3e DEIJL', date:'3 jul', venue:'Kansas City' },
+    88: { id:88, home:'2D', away:'2G', date:'3 jul', venue:'Arlington' },
+    // ROUND OF 16 (8 matches)
+    89: { id:89, home:'W74', away:'W77', date:'4 jul', venue:'Philadelphia' },
+    90: { id:90, home:'W73', away:'W75', date:'4 jul', venue:'Houston' },
+    91: { id:91, home:'W76', away:'W78', date:'5 jul', venue:'East Rutherford' },
+    92: { id:92, home:'W79', away:'W80', date:'5 jul', venue:'Mexico-Stad' },
+    93: { id:93, home:'W83', away:'W84', date:'6 jul', venue:'Arlington' },
+    94: { id:94, home:'W81', away:'W82', date:'6 jul', venue:'Seattle' },
+    95: { id:95, home:'W86', away:'W88', date:'7 jul', venue:'Atlanta' },
+    96: { id:96, home:'W85', away:'W87', date:'7 jul', venue:'Vancouver' },
+    // QUARTERFINALS (4 matches)
+    97:  { id:97,  home:'W89', away:'W90', date:'9 jul', venue:'Foxborough' },
+    98:  { id:98,  home:'W93', away:'W94', date:'10 jul', venue:'Inglewood' },
+    99:  { id:99,  home:'W91', away:'W92', date:'11 jul', venue:'Miami' },
+    100: { id:100, home:'W95', away:'W96', date:'11 jul', venue:'Kansas City' },
+    // SEMIFINALS (2 matches)
+    101: { id:101, home:'W97', away:'W98', date:'14 jul', venue:'Arlington' },
+    102: { id:102, home:'W99', away:'W100', date:'15 jul', venue:'Atlanta' },
+    // THIRD PLACE
+    103: { id:103, home:'V101', away:'V102', date:'18 jul', venue:'Miami' },
+    // FINAL
+    104: { id:104, home:'W101', away:'W102', date:'19 jul', venue:'East Rutherford' }
+  };
+
+  // The bracket tree: left side feeds SF101, right side feeds SF102
+  // Left top → QF97, Left bottom → QF98
+  // Right top → QF99, Right bottom → QF100
+
+  var bracketEl = document.getElementById('bracket');
+
+  function makeSlot(matchId, cls) {
+    var m = knockoutMatches[matchId];
+    var el = document.createElement('div');
+    el.className = (cls || 'match-slot');
+    el.innerHTML =
+      '<div class="match-num">M' + m.id + ' &middot; ' + m.venue + '</div>' +
+      '<div class="match-date">' + m.date + ' 2026</div>' +
+      '<div class="team-row"><span class="team-label group-pos">' + m.home + '</span></div>' +
+      '<div class="team-row"><span class="team-label group-pos">' + m.away + '</span></div>';
+    return el;
+  }
+
+  function makeSpacer(cls) {
+    var s = document.createElement('div');
+    s.className = cls;
+    return s;
+  }
+
+  function makeRoundLabel(text) {
+    var l = document.createElement('div');
+    l.className = 'round-label';
+    l.textContent = text;
+    return l;
+  }
+
+  // ── Build LEFT side: R32 → R16 → QF → SF ──
+
+  // Left R32: matches 74,77 | 73,75 | 83,84 | 81,82
+  function buildLeftR32() {
+    var col = document.createElement('div');
+    col.className = 'round';
+    var label = makeRoundLabel('Ronde van 32');
+    col.appendChild(label);
+    var cont = document.createElement('div');
+    cont.className = 'round-matches';
+    // Top pair: M74, M77
+    cont.appendChild(makeSlot(74));
+    cont.appendChild(makeSpacer('match-spacer-r32'));
+    cont.appendChild(makeSlot(77));
+    cont.appendChild(makeSpacer('match-pair-gap-r32'));
+    // Second pair: M73, M75
+    cont.appendChild(makeSlot(73));
+    cont.appendChild(makeSpacer('match-spacer-r32'));
+    cont.appendChild(makeSlot(75));
+    cont.appendChild(makeSpacer('match-pair-gap-r32'));
+    // Third pair: M83, M84
+    cont.appendChild(makeSlot(83));
+    cont.appendChild(makeSpacer('match-spacer-r32'));
+    cont.appendChild(makeSlot(84));
+    cont.appendChild(makeSpacer('match-pair-gap-r32'));
+    // Fourth pair: M81, M82
+    cont.appendChild(makeSlot(81));
+    cont.appendChild(makeSpacer('match-spacer-r32'));
+    cont.appendChild(makeSlot(82));
+    col.appendChild(cont);
+    return col;
+  }
+
+  function buildLeftR16() {
+    var col = document.createElement('div');
+    col.className = 'round';
+    var label = makeRoundLabel('Achtste Finales');
+    col.appendChild(label);
+    var cont = document.createElement('div');
+    cont.className = 'round-matches';
+    cont.appendChild(makeSlot(89));
+    cont.appendChild(makeSpacer('match-spacer-r16'));
+    cont.appendChild(makeSlot(90));
+    cont.appendChild(makeSpacer('match-pair-gap-r16'));
+    cont.appendChild(makeSlot(93));
+    cont.appendChild(makeSpacer('match-spacer-r16'));
+    cont.appendChild(makeSlot(94));
+    col.appendChild(cont);
+    return col;
+  }
+
+  function buildLeftQF() {
+    var col = document.createElement('div');
+    col.className = 'round';
+    var label = makeRoundLabel('Kwartfinales');
+    col.appendChild(label);
+    var cont = document.createElement('div');
+    cont.className = 'round-matches';
+    cont.appendChild(makeSlot(97));
+    cont.appendChild(makeSpacer('match-spacer-qf'));
+    cont.appendChild(makeSlot(98));
+    col.appendChild(cont);
+    return col;
+  }
+
+  function buildLeftSF() {
+    var col = document.createElement('div');
+    col.className = 'round';
+    var label = makeRoundLabel('Halve Finale');
+    col.appendChild(label);
+    var cont = document.createElement('div');
+    cont.className = 'round-matches';
+    cont.appendChild(makeSlot(101));
+    col.appendChild(cont);
+    return col;
+  }
+
+  // ── Build RIGHT side: SF → QF → R16 → R32 ──
+
+  function buildRightSF() {
+    var col = document.createElement('div');
+    col.className = 'round';
+    var label = makeRoundLabel('Halve Finale');
+    col.appendChild(label);
+    var cont = document.createElement('div');
+    cont.className = 'round-matches';
+    cont.appendChild(makeSlot(102));
+    col.appendChild(cont);
+    return col;
+  }
+
+  function buildRightQF() {
+    var col = document.createElement('div');
+    col.className = 'round';
+    var label = makeRoundLabel('Kwartfinales');
+    col.appendChild(label);
+    var cont = document.createElement('div');
+    cont.className = 'round-matches';
+    cont.appendChild(makeSlot(99));
+    cont.appendChild(makeSpacer('match-spacer-qf'));
+    cont.appendChild(makeSlot(100));
+    col.appendChild(cont);
+    return col;
+  }
+
+  function buildRightR16() {
+    var col = document.createElement('div');
+    col.className = 'round';
+    var label = makeRoundLabel('Achtste Finales');
+    col.appendChild(label);
+    var cont = document.createElement('div');
+    cont.className = 'round-matches';
+    cont.appendChild(makeSlot(91));
+    cont.appendChild(makeSpacer('match-spacer-r16'));
+    cont.appendChild(makeSlot(92));
+    cont.appendChild(makeSpacer('match-pair-gap-r16'));
+    cont.appendChild(makeSlot(95));
+    cont.appendChild(makeSpacer('match-spacer-r16'));
+    cont.appendChild(makeSlot(96));
+    col.appendChild(cont);
+    return col;
+  }
+
+  function buildRightR32() {
+    var col = document.createElement('div');
+    col.className = 'round';
+    var label = makeRoundLabel('Ronde van 32');
+    col.appendChild(label);
+    var cont = document.createElement('div');
+    cont.className = 'round-matches';
+    // Top pair: M76, M78
+    cont.appendChild(makeSlot(76));
+    cont.appendChild(makeSpacer('match-spacer-r32'));
+    cont.appendChild(makeSlot(78));
+    cont.appendChild(makeSpacer('match-pair-gap-r32'));
+    // Second pair: M79, M80
+    cont.appendChild(makeSlot(79));
+    cont.appendChild(makeSpacer('match-spacer-r32'));
+    cont.appendChild(makeSlot(80));
+    cont.appendChild(makeSpacer('match-pair-gap-r32'));
+    // Third pair: M86, M88
+    cont.appendChild(makeSlot(86));
+    cont.appendChild(makeSpacer('match-spacer-r32'));
+    cont.appendChild(makeSlot(88));
+    cont.appendChild(makeSpacer('match-pair-gap-r32'));
+    // Fourth pair: M85, M87
+    cont.appendChild(makeSlot(85));
+    cont.appendChild(makeSpacer('match-spacer-r32'));
+    cont.appendChild(makeSlot(87));
+    col.appendChild(cont);
+    return col;
+  }
+
+  // ── Build FINAL column ──
+  function buildFinal() {
+    var col = document.createElement('div');
+    col.className = 'final-column';
+    col.innerHTML = '<div class="trophy-icon">&#127942;</div>' +
+                    '<div class="final-label">FINALE</div>';
+    col.appendChild(makeSlot(104, 'final-slot'));
+    col.innerHTML += '<div class="final-venue">MetLife Stadium, East Rutherford</div>';
+    return col;
+  }
+
+  // ── Connector columns ──
+  function buildConnector(matchCount, side) {
+    var col = document.createElement('div');
+    col.style.width = '20px';
+    col.style.display = 'flex';
+    col.style.flexDirection = 'column';
+    col.style.justifyContent = 'center';
+    col.style.alignItems = 'center';
+    col.style.position = 'relative';
+
+    // Draw SVG connector lines
+    var svg = document.createElementNS('http://www.w3.org/2000/svg','svg');
+    svg.setAttribute('width', '20');
+    svg.setAttribute('height', '100%');
+    svg.style.position = 'absolute';
+    svg.style.top = '0';
+    svg.style.left = '0';
+    svg.style.overflow = 'visible';
+    col.appendChild(svg);
+
+    return col;
+  }
+
+  // ── Assemble bracket ──
+  // Spacer columns between rounds
+  function makeGapCol(w) {
+    var d = document.createElement('div');
+    d.style.width = (w || 16) + 'px';
+    d.style.flexShrink = '0';
+    return d;
+  }
+
+  bracketEl.appendChild(buildLeftR32());
+  bracketEl.appendChild(makeGapCol(16));
+  bracketEl.appendChild(buildLeftR16());
+  bracketEl.appendChild(makeGapCol(16));
+  bracketEl.appendChild(buildLeftQF());
+  bracketEl.appendChild(makeGapCol(16));
+  bracketEl.appendChild(buildLeftSF());
+  bracketEl.appendChild(makeGapCol(20));
+  bracketEl.appendChild(buildFinal());
+  bracketEl.appendChild(makeGapCol(20));
+  bracketEl.appendChild(buildRightSF());
+  bracketEl.appendChild(makeGapCol(16));
+  bracketEl.appendChild(buildRightQF());
+  bracketEl.appendChild(makeGapCol(16));
+  bracketEl.appendChild(buildRightR16());
+  bracketEl.appendChild(makeGapCol(16));
+  bracketEl.appendChild(buildRightR32());
+
+  // ── Third place match ──
+  var tpEl = document.getElementById('third-place');
+  var tp = knockoutMatches[103];
+  tpEl.innerHTML =
+    '<div class="match-num">M103 &middot; ' + tp.venue + '</div>' +
+    '<div class="match-date">' + tp.date + ' 2026</div>' +
+    '<div class="team-row"><span class="team-label group-pos">' + tp.home + '</span></div>' +
+    '<div class="team-row"><span class="team-label group-pos">' + tp.away + '</span></div>';
+
+  // ── Draw connector lines using SVG overlay ──
+  drawConnectors();
+
+  function drawConnectors() {
+    // Remove old SVG
+    var oldSvg = document.getElementById('bracket-lines');
+    if (oldSvg) oldSvg.remove();
+
+    var svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.id = 'bracket-lines';
+    svg.style.position = 'absolute';
+    svg.style.top = '0';
+    svg.style.left = '0';
+    svg.style.pointerEvents = 'none';
+
+    var wrapperRect = document.querySelector('.bracket-wrapper').getBoundingClientRect();
+    var bracketRect = bracketEl.getBoundingClientRect();
+
+    svg.setAttribute('width', bracketRect.width);
+    svg.setAttribute('height', bracketRect.height);
+    svg.style.width = bracketRect.width + 'px';
+    svg.style.height = bracketRect.height + 'px';
+
+    bracketEl.style.position = 'relative';
+    bracketEl.appendChild(svg);
+
+    var allSlots = bracketEl.querySelectorAll('.match-slot, .final-slot');
+    var slotMap = {};
+
+    allSlots.forEach(function(slot) {
+      var numEl = slot.querySelector('.match-num');
+      if (!numEl) return;
+      var txt = numEl.textContent;
+      var m = txt.match(/M(\d+)/);
+      if (m) slotMap['M' + m[1]] = slot;
+    });
+
+    var lineColor = 'rgba(255,215,0,0.25)';
+    var lineWidth = '1.5';
+
+    // Connect pairs: source match → target match
+    // The "home" of a target match references "W{sourceId}"
+    var connections = [
+      // Left R32 → R16
+      [74, 89, 'left'], [77, 89, 'left'],
+      [73, 90, 'left'], [75, 90, 'left'],
+      [83, 93, 'left'], [84, 93, 'left'],
+      [81, 94, 'left'], [82, 94, 'left'],
+      // Left R16 → QF
+      [89, 97, 'left'], [90, 97, 'left'],
+      [93, 98, 'left'], [94, 98, 'left'],
+      // Left QF → SF
+      [97, 101, 'left'], [98, 101, 'left'],
+      // Left SF → Final
+      [101, 104, 'left'],
+      // Right R32 → R16
+      [76, 91, 'right'], [78, 91, 'right'],
+      [79, 92, 'right'], [80, 92, 'right'],
+      [86, 95, 'right'], [88, 95, 'right'],
+      [85, 96, 'right'], [87, 96, 'right'],
+      // Right R16 → QF
+      [91, 99, 'right'], [92, 99, 'right'],
+      [95, 100, 'right'], [96, 100, 'right'],
+      // Right QF → SF
+      [99, 102, 'right'], [100, 102, 'right'],
+      // Right SF → Final
+      [102, 104, 'right']
+    ];
+
+    connections.forEach(function(conn) {
+      var srcSlot = slotMap['M' + conn[0]];
+      var tgtSlot = slotMap['M' + conn[1]];
+      if (!srcSlot || !tgtSlot) return;
+
+      var srcRect = srcSlot.getBoundingClientRect();
+      var tgtRect = tgtSlot.getBoundingClientRect();
+
+      var srcX, srcY, tgtX, tgtY, midX;
+
+      if (conn[2] === 'left') {
+        srcX = srcRect.right - bracketRect.left;
+        srcY = (srcRect.top + srcRect.bottom) / 2 - bracketRect.top;
+        tgtX = tgtRect.left - bracketRect.left;
+        tgtY = (tgtRect.top + tgtRect.bottom) / 2 - bracketRect.top;
+        midX = (srcX + tgtX) / 2;
+      } else {
+        srcX = srcRect.left - bracketRect.left;
+        srcY = (srcRect.top + srcRect.bottom) / 2 - bracketRect.top;
+        tgtX = tgtRect.right - bracketRect.left;
+        tgtY = (tgtRect.top + tgtRect.bottom) / 2 - bracketRect.top;
+        midX = (srcX + tgtX) / 2;
+      }
+
+      // Draw L-shaped connector: horizontal from src, vertical, horizontal to target
+      var path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      path.setAttribute('d',
+        'M ' + srcX + ' ' + srcY +
+        ' L ' + midX + ' ' + srcY +
+        ' L ' + midX + ' ' + tgtY +
+        ' L ' + tgtX + ' ' + tgtY
+      );
+      path.setAttribute('fill', 'none');
+      path.setAttribute('stroke', lineColor);
+      path.setAttribute('stroke-width', lineWidth);
+      svg.appendChild(path);
+    });
+  }
+
+  // Redraw on resize
+  var resizeTimer;
+  window.addEventListener('resize', function() {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(drawConnectors, 200);
+  });
+
+})();
+</script>
+</body>
+</html>

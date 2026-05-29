@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WK 2026 - Groepsfase</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #0d1b2e; color: #fff; min-height: 100vh; }
+
+    header { background: linear-gradient(135deg, #003087 0%, #006400 100%); padding: 32px 20px 0; text-align: center; box-shadow: 0 4px 24px rgba(0,0,0,0.6); }
+    header h1 { font-size: 2.2rem; font-weight: 800; text-shadow: 2px 2px 6px rgba(0,0,0,0.4); }
+    header p  { margin-top: 4px; font-size: 0.95rem; opacity: 0.8; letter-spacing: 1px; }
+
+    .site-nav { display: flex; justify-content: center; gap: 2px; margin-top: 16px; padding: 0 20px; }
+    .nav-link { color: rgba(255,255,255,0.65); text-decoration: none; padding: 10px 22px; font-weight: 600; font-size: 0.88rem; letter-spacing: 0.5px; border-bottom: 3px solid transparent; transition: all 0.18s; }
+    .nav-link:hover { color: #fff; }
+    .nav-link.active { color: #FFD700; border-bottom-color: #FFD700; }
+
+    .stats-bar { display: flex; justify-content: center; gap: 36px; padding: 12px 20px; background: rgba(255,255,255,0.05); border-bottom: 1px solid rgba(255,255,255,0.08); flex-wrap: wrap; }
+    .stat { text-align: center; }
+    .stat-value { font-size: 1.5rem; font-weight: 700; color: #FFD700; }
+    .stat-label { font-size: 0.68rem; opacity: 0.6; text-transform: uppercase; letter-spacing: 1px; }
+
+    /* ── Controls ── */
+    .controls { padding: 20px 20px 8px; max-width: 1000px; margin: 0 auto; display: flex; flex-direction: column; align-items: center; gap: 12px; }
+    .filter-row { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+    .filter-btn {
+      padding: 7px 16px; border-radius: 20px; border: 2px solid rgba(255,255,255,0.2);
+      background: transparent; color: rgba(255,255,255,0.75); cursor: pointer;
+      font-size: 0.8rem; font-weight: 600; transition: all 0.18s;
+    }
+    .filter-btn:hover { background: rgba(255,255,255,0.1); color: #fff; }
+    .filter-btn.active { color: #fff; border-color: transparent; background: #FFD700; color: #000; }
+
+    .group-filter-row { display: flex; flex-wrap: wrap; gap: 5px; justify-content: center; }
+    .group-btn {
+      padding: 5px 11px; border-radius: 14px; border: 2px solid rgba(255,255,255,0.15);
+      background: transparent; color: rgba(255,255,255,0.6); cursor: pointer;
+      font-size: 0.72rem; font-weight: 700; transition: all 0.18s;
+    }
+    .group-btn:hover { background: rgba(255,255,255,0.1); color: #fff; }
+    .group-btn.active { background: #003087; color: #fff; border-color: transparent; }
+
+    .match-count { font-size: 0.82rem; opacity: 0.5; }
+
+    /* ── Schedule container ── */
+    .schedule { max-width: 900px; margin: 0 auto; padding: 10px 20px 60px; }
+
+    /* ── Date header ── */
+    .date-header {
+      margin-top: 28px; margin-bottom: 14px; padding: 10px 18px;
+      background: linear-gradient(90deg, rgba(255,215,0,0.15), transparent);
+      border-left: 4px solid #FFD700; border-radius: 0 8px 8px 0;
+    }
+    .date-header h2 { font-size: 1.05rem; font-weight: 700; color: #FFD700; }
+    .date-header span { font-size: 0.75rem; opacity: 0.6; margin-left: 8px; }
+
+    /* ── Match card ── */
+    .match-card {
+      background: #fff; border-radius: 12px; margin-bottom: 10px; overflow: hidden;
+      box-shadow: 0 3px 14px rgba(0,0,0,0.35); color: #222;
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+    .match-card:hover { transform: translateY(-2px); box-shadow: 0 6px 22px rgba(0,0,0,0.5); }
+    .match-card.hidden { display: none; }
+
+    .match-top {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 5px 14px; background: #f0f2f5; font-size: 0.7rem; color: #666;
+    }
+    .match-group {
+      font-weight: 800; padding: 2px 8px; border-radius: 8px; font-size: 0.68rem;
+      background: #003087; color: #fff;
+    }
+
+    .match-body { display: flex; align-items: center; padding: 12px 14px; gap: 8px; }
+
+    .match-team {
+      flex: 1; display: flex; align-items: center; gap: 10px;
+    }
+    .match-team.away { flex-direction: row-reverse; text-align: right; }
+    .match-team-flag {
+      width: 40px; height: 27px; object-fit: cover; border-radius: 3px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.2); flex-shrink: 0;
+    }
+    .match-team-flag-fb {
+      width: 40px; height: 27px; border-radius: 3px; background: #dde;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.55rem; font-weight: 700; color: #888; flex-shrink: 0;
+    }
+    .match-team-name { font-weight: 700; font-size: 0.9rem; color: #1a1a2e; }
+    .match-team-name .host-tag { font-size: 0.6rem; margin-left: 3px; }
+
+    .match-vs {
+      flex-shrink: 0; width: 60px; text-align: center;
+      font-size: 0.8rem; font-weight: 800; color: #888;
+      background: #f7f8fa; border-radius: 8px; padding: 6px 4px;
+    }
+    .match-time-label { font-size: 0.6rem; font-weight: 600; color: #aaa; display: block; margin-top: 2px; }
+
+    .match-bottom {
+      display: flex; align-items: center; justify-content: center;
+      padding: 5px 14px; background: #f8f9fb; font-size: 0.7rem; color: #999;
+      gap: 5px; border-top: 1px solid #eee;
+    }
+    .venue-flag {
+      width: 14px; height: 10px; object-fit: cover; border-radius: 1px;
+    }
+
+    /* ── Knockout section ── */
+    .knockout-section { max-width: 900px; margin: 10px auto 0; padding: 0 20px 60px; }
+    .knockout-card {
+      background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 12px; padding: 16px 20px; margin-bottom: 10px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .knockout-round { font-weight: 700; font-size: 1rem; }
+    .knockout-dates { font-size: 0.82rem; opacity: 0.6; }
+    .knockout-matches {
+      font-size: 0.8rem; background: rgba(255,215,0,0.15); color: #FFD700;
+      padding: 4px 12px; border-radius: 10px; font-weight: 700;
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 600px) {
+      header h1 { font-size: 1.7rem; }
+      .match-team-name { font-size: 0.78rem; }
+      .match-team-flag { width: 32px; height: 22px; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>&#9917; WK 2026 Voorspelling</h1>
+  <p>FIFA Wereldkampioenschap &middot; USA &middot; Canada &middot; Mexico</p>
+  <nav class="site-nav">
+    <a href="index.html" class="nav-link">&#127757; Landen</a>
+    <a href="groepen.html" class="nav-link">&#128202; Groepen</a>
+    <a href="schema.html" class="nav-link active">&#128197; Groepsfase</a>
+    <a href="knockout.html" class="nav-link">&#127942; Knockout</a>
+    <a href="stadions.html" class="nav-link">&#127951; Stadions</a>
+    <a href="scheidsrechters.html" class="nav-link">🎯 Scheidsrechters</a>
+  </nav>
+</header>
+
+<div class="stats-bar">
+  <div class="stat"><div class="stat-value">72</div><div class="stat-label">Groepswedstrijden</div></div>
+  <div class="stat"><div class="stat-value">32</div><div class="stat-label">KO-wedstrijden</div></div>
+  <div class="stat"><div class="stat-value">104</div><div class="stat-label">Totaal</div></div>
+  <div class="stat"><div class="stat-value">16</div><div class="stat-label">Stadions</div></div>
+</div>
+
+<div class="controls">
+  <div class="filter-row">
+    <button class="filter-btn active" data-md="all">Alle speeldagen</button>
+    <button class="filter-btn" data-md="1">Speeldag 1</button>
+    <button class="filter-btn" data-md="2">Speeldag 2</button>
+    <button class="filter-btn" data-md="3">Speeldag 3</button>
+  </div>
+  <div class="group-filter-row">
+    <button class="group-btn active" data-group="all">Alle</button>
+    <button class="group-btn" data-group="A">A</button>
+    <button class="group-btn" data-group="B">B</button>
+    <button class="group-btn" data-group="C">C</button>
+    <button class="group-btn" data-group="D">D</button>
+    <button class="group-btn" data-group="E">E</button>
+    <button class="group-btn" data-group="F">F</button>
+    <button class="group-btn" data-group="G">G</button>
+    <button class="group-btn" data-group="H">H</button>
+    <button class="group-btn" data-group="I">I</button>
+    <button class="group-btn" data-group="J">J</button>
+    <button class="group-btn" data-group="K">K</button>
+    <button class="group-btn" data-group="L">L</button>
+  </div>
+  <div class="match-count" id="match-count"></div>
+</div>
+
+<div class="schedule" id="schedule"></div>
+
+<script src="data/teams.js"></script>
+<script src="data/matches.js"></script>
+<script>
+  var scheduleEl = document.getElementById('schedule');
+  var countEl    = document.getElementById('match-count');
+  var mdBtns     = document.querySelectorAll('.filter-btn[data-md]');
+  var grpBtns    = document.querySelectorAll('.group-btn[data-group]');
+  var currentMd  = 'all';
+  var currentGrp = 'all';
+
+  // Build team lookup
+  var teamMap = {};
+  teamsData.teams.forEach(function(t) { teamMap[t.id] = t; });
+
+  // Dutch date formatting
+  var dagNamen = ['Zondag','Maandag','Dinsdag','Woensdag','Donderdag','Vrijdag','Zaterdag'];
+  var maandNamen = ['jan','feb','mrt','apr','mei','jun','jul','aug','sep','okt','nov','dec'];
+
+  function formatDate(dateStr) {
+    var d = new Date(dateStr + 'T00:00:00');
+    return dagNamen[d.getDay()] + ' ' + d.getDate() + ' ' + maandNamen[d.getMonth()] + ' ' + d.getFullYear();
+  }
+
+  function buildSchedule() {
+    // Group matches by date
+    var byDate = {};
+    matchesData.matches.forEach(function(m) {
+      if (!byDate[m.date]) byDate[m.date] = [];
+      byDate[m.date].push(m);
+    });
+
+    var dates = Object.keys(byDate).sort();
+    dates.forEach(function(date) {
+      var header = document.createElement('div');
+      header.className = 'date-header';
+      header.dataset.date = date;
+      var matchCount = byDate[date].length;
+      header.innerHTML = '<h2>' + formatDate(date) + '<span>' + matchCount + ' wedstrijd' + (matchCount !== 1 ? 'en' : '') + '</span></h2>';
+      scheduleEl.appendChild(header);
+
+      byDate[date].forEach(function(match) {
+        var home = teamMap[match.home];
+        var away = teamMap[match.away];
+        var venue = matchesData.venues[match.venue];
+
+        var card = document.createElement('div');
+        card.className = 'match-card';
+        card.dataset.matchday = match.matchday;
+        card.dataset.group = match.group;
+        card.dataset.date = match.date;
+
+        var homeFlag = 'https://flagcdn.com/w80/' + home.code + '.png';
+        var awayFlag = 'https://flagcdn.com/w80/' + away.code + '.png';
+        var venueFlag = venue ? 'https://flagcdn.com/w40/' + venue.country + '.png' : '';
+
+        card.innerHTML =
+          '<div class="match-top">' +
+            '<span class="match-group">Groep ' + match.group + '</span>' +
+            '<span>Wedstrijd #' + match.id + '</span>' +
+          '</div>' +
+          '<div class="match-body">' +
+            '<div class="match-team home">' +
+              '<img class="match-team-flag" src="' + homeFlag + '" alt="' + home.name + '"' +
+                ' onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'">' +
+              '<div class="match-team-flag-fb" style="display:none">' + home.code.toUpperCase() + '</div>' +
+              '<span class="match-team-name">' + home.name + (home.host ? ' <span class="host-tag">&#127968;</span>' : '') + '</span>' +
+            '</div>' +
+            '<div class="match-vs">' +
+              'VS' +
+              '<span class="match-time-label">' + match.time + ' uur</span>' +
+            '</div>' +
+            '<div class="match-team away">' +
+              '<img class="match-team-flag" src="' + awayFlag + '" alt="' + away.name + '"' +
+                ' onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'">' +
+              '<div class="match-team-flag-fb" style="display:none">' + away.code.toUpperCase() + '</div>' +
+              '<span class="match-team-name">' + away.name + (away.host ? ' <span class="host-tag">&#127968;</span>' : '') + '</span>' +
+            '</div>' +
+          '</div>' +
+          (venue ?
+            '<div class="match-bottom">' +
+              '<img class="venue-flag" src="' + venueFlag + '" alt="">' +
+              '<span>' + venue.name + ', ' + venue.city + '</span>' +
+            '</div>' : '');
+
+        scheduleEl.appendChild(card);
+      });
+    });
+  }
+
+  function buildKnockout() {
+    matchesData.knockoutRounds.forEach(function(round) {
+      var card = document.createElement('div');
+      card.className = 'knockout-card';
+      card.innerHTML =
+        '<div>' +
+          '<div class="knockout-round">' + round.round + '</div>' +
+          '<div class="knockout-dates">' + round.dates + ' 2026</div>' +
+        '</div>' +
+        '<span class="knockout-matches">' + round.matchCount + ' wedstrijd' + (round.matchCount !== 1 ? 'en' : '') + '</span>';
+      knockoutEl.appendChild(card);
+    });
+  }
+
+  function applyFilters() {
+    var visible = 0;
+    var visibleDates = {};
+
+    scheduleEl.querySelectorAll('.match-card').forEach(function(card) {
+      var matchMd  = currentMd === 'all' || card.dataset.matchday === currentMd;
+      var matchGrp = currentGrp === 'all' || card.dataset.group === currentGrp;
+      var show = matchMd && matchGrp;
+      card.classList.toggle('hidden', !show);
+      if (show) {
+        visible++;
+        visibleDates[card.dataset.date] = true;
+      }
+    });
+
+    // Hide/show date headers
+    scheduleEl.querySelectorAll('.date-header').forEach(function(header) {
+      header.style.display = visibleDates[header.dataset.date] ? '' : 'none';
+    });
+
+    countEl.textContent = visible + ' wedstrijd' + (visible !== 1 ? 'en' : '') + ' weergegeven';
+  }
+
+  mdBtns.forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      mdBtns.forEach(function(b) { b.classList.remove('active'); });
+      btn.classList.add('active');
+      currentMd = btn.dataset.md;
+      applyFilters();
+    });
+  });
+
+  grpBtns.forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      grpBtns.forEach(function(b) { b.classList.remove('active'); });
+      btn.classList.add('active');
+      currentGrp = btn.dataset.group;
+      applyFilters();
+    });
+  });
+
+  buildSchedule();
+  applyFilters();
+</script>
+</body>
+</html>

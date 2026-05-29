@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WK 2026 - Team Detail</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #0d1b2e; color: #fff; min-height: 100vh; }
+
+    header { background: linear-gradient(135deg, #003087 0%, #006400 100%); padding: 32px 20px 0; text-align: center; box-shadow: 0 4px 24px rgba(0,0,0,0.6); }
+    header h1 { font-size: 2.2rem; font-weight: 800; text-shadow: 2px 2px 6px rgba(0,0,0,0.4); }
+    header p  { margin-top: 4px; font-size: 0.95rem; opacity: 0.8; letter-spacing: 1px; }
+    .site-nav { display: flex; justify-content: center; gap: 2px; margin-top: 16px; padding: 0 20px; flex-wrap: wrap; }
+    .nav-link { color: rgba(255,255,255,0.65); text-decoration: none; padding: 10px 22px; font-weight: 600; font-size: 0.88rem; letter-spacing: 0.5px; border-bottom: 3px solid transparent; transition: all 0.18s; }
+    .nav-link:hover { color: #fff; }
+    .nav-link.active { color: #FFD700; border-bottom-color: #FFD700; }
+
+    /* ── Hero ── */
+    .hero {
+      max-width: 900px; margin: 0 auto; padding: 30px 20px 20px;
+      display: flex; align-items: center; gap: 30px; flex-wrap: wrap;
+    }
+    .hero-flag {
+      width: 200px; height: 133px; object-fit: cover; border-radius: 12px;
+      box-shadow: 0 6px 28px rgba(0,0,0,0.5);
+    }
+    .hero-flag-fb {
+      width: 200px; height: 133px; border-radius: 12px; background: #1a2a44;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 2rem; font-weight: 700; color: #555;
+    }
+    .hero-info { flex: 1; min-width: 220px; }
+    .hero-info h2 { font-size: 2rem; font-weight: 800; margin-bottom: 4px; }
+    .hero-info .group-badge {
+      display: inline-block; padding: 4px 14px; border-radius: 16px;
+      background: #FFD700; color: #000; font-weight: 800; font-size: 0.82rem;
+      margin-right: 8px; letter-spacing: 0.5px;
+    }
+    .hero-info .conf-badge {
+      display: inline-block; padding: 4px 12px; border-radius: 16px;
+      font-weight: 700; font-size: 0.72rem; letter-spacing: 0.5px;
+    }
+    .conf-UEFA { background: #003399; }
+    .conf-CONMEBOL { background: #006400; }
+    .conf-CONCACAF { background: #c8102e; }
+    .conf-CAF { background: #d4a017; color: #000; }
+    .conf-AFC { background: #ff6b00; }
+    .conf-OFC { background: #00aaff; }
+    .host-badge {
+      display: inline-block; padding: 4px 10px; border-radius: 16px;
+      background: rgba(255,255,255,0.15); font-size: 0.72rem; font-weight: 700;
+      margin-left: 6px;
+    }
+
+    /* ── Stats Grid ── */
+    .info-grid {
+      max-width: 900px; margin: 0 auto; padding: 0 20px 20px;
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px;
+    }
+    .info-card {
+      background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 12px; padding: 16px; text-align: center;
+    }
+    .info-card .ic-value { font-size: 1.6rem; font-weight: 800; color: #FFD700; }
+    .info-card .ic-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; opacity: 0.5; margin-top: 4px; }
+    .info-card .ic-text { font-size: 0.82rem; font-weight: 600; margin-top: 2px; }
+    .info-card .ic-value.trophy { font-size: 1.8rem; }
+
+    /* ── Description ── */
+    .description {
+      max-width: 900px; margin: 0 auto; padding: 0 20px 24px;
+    }
+    .description p {
+      background: rgba(255,255,255,0.04); border-left: 4px solid #FFD700;
+      border-radius: 0 12px 12px 0; padding: 16px 20px;
+      font-size: 0.92rem; line-height: 1.65; opacity: 0.85;
+    }
+
+    /* ── Squad ── */
+    .squad-section {
+      max-width: 900px; margin: 0 auto; padding: 0 20px 40px;
+    }
+    .squad-header {
+      font-size: 1.2rem; font-weight: 800; margin-bottom: 16px;
+      padding-bottom: 8px; border-bottom: 2px solid rgba(255,215,0,0.2);
+    }
+    .squad-header span { color: #FFD700; }
+
+    .squad-empty {
+      text-align: center; padding: 40px 20px;
+      background: rgba(255,255,255,0.03); border-radius: 12px;
+      border: 1px dashed rgba(255,255,255,0.1);
+    }
+    .squad-empty p { font-size: 0.9rem; opacity: 0.4; }
+
+    .pos-group { margin-bottom: 20px; }
+    .pos-group-title {
+      font-size: 0.75rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 2px; margin-bottom: 8px; padding-left: 4px;
+    }
+    .pos-DL .pos-group-title { color: #ffa500; }
+    .pos-VD .pos-group-title { color: #4da6ff; }
+    .pos-MV .pos-group-title { color: #50c878; }
+    .pos-AA .pos-group-title { color: #ff6b6b; }
+
+    .player-card {
+      display: flex; align-items: center; gap: 12px;
+      background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 10px; padding: 10px 14px; margin-bottom: 6px;
+      transition: all 0.15s;
+    }
+    .player-card:hover {
+      background: rgba(255,255,255,0.1); border-color: rgba(255,215,0,0.3);
+      transform: translateX(4px);
+    }
+    .player-photo-wrap {
+      width: 48px; height: 48px; border-radius: 50%; overflow: hidden;
+      flex-shrink: 0; background: #1a2a44;
+      display: flex; align-items: center; justify-content: center;
+      border: 2px solid rgba(255,255,255,0.1);
+    }
+    .player-photo-wrap img {
+      width: 100%; height: 100%; object-fit: cover;
+    }
+    .player-photo-placeholder {
+      font-size: 1.1rem; opacity: 0.3;
+    }
+    .player-num {
+      width: 28px; height: 28px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 800; font-size: 0.78rem; flex-shrink: 0;
+    }
+    .pos-DL .player-num { background: rgba(255,165,0,0.2); color: #ffa500; }
+    .pos-VD .player-num { background: rgba(77,166,255,0.2); color: #4da6ff; }
+    .pos-MV .player-num { background: rgba(80,200,120,0.2); color: #50c878; }
+    .pos-AA .player-num { background: rgba(255,107,107,0.2); color: #ff6b6b; }
+
+    .player-name { font-weight: 700; font-size: 0.9rem; flex: 1; }
+    .player-club { font-size: 0.75rem; opacity: 0.5; text-align: right; }
+
+    .pos-badge {
+      padding: 2px 8px; border-radius: 8px; font-size: 0.6rem;
+      font-weight: 800; letter-spacing: 0.5px; flex-shrink: 0;
+    }
+    .pos-DL .pos-badge { background: rgba(255,165,0,0.15); color: #ffa500; }
+    .pos-VD .pos-badge { background: rgba(77,166,255,0.15); color: #4da6ff; }
+    .pos-MV .pos-badge { background: rgba(80,200,120,0.15); color: #50c878; }
+    .pos-AA .pos-badge { background: rgba(255,107,107,0.15); color: #ff6b6b; }
+
+    /* ── Back link ── */
+    .back-link {
+      max-width: 900px; margin: 0 auto; padding: 20px 20px 0;
+    }
+    .back-link a {
+      color: rgba(255,255,255,0.5); text-decoration: none; font-size: 0.85rem;
+      font-weight: 600; transition: color 0.15s;
+    }
+    .back-link a:hover { color: #FFD700; }
+
+    /* ── Not found ── */
+    .not-found {
+      text-align: center; padding: 80px 20px;
+    }
+    .not-found h2 { font-size: 1.5rem; margin-bottom: 10px; }
+    .not-found p { opacity: 0.5; }
+
+    /* ── Responsive ── */
+    @media (max-width: 600px) {
+      header h1 { font-size: 1.5rem; }
+      .hero { flex-direction: column; text-align: center; }
+      .hero-flag { width: 160px; height: 107px; }
+      .hero-info h2 { font-size: 1.5rem; }
+      .info-grid { grid-template-columns: repeat(2, 1fr); }
+      .player-club { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>&#9917; WK 2026 Voorspelling</h1>
+  <p>FIFA Wereldkampioenschap &middot; USA &middot; Canada &middot; Mexico</p>
+  <nav class="site-nav">
+    <a href="index.html" class="nav-link active">&#127757; Landen</a>
+    <a href="groepen.html" class="nav-link">&#128202; Groepen</a>
+    <a href="schema.html" class="nav-link">&#128197; Groepsfase</a>
+    <a href="knockout.html" class="nav-link">&#127942; Knockout</a>
+    <a href="stadions.html" class="nav-link">&#127951; Stadions</a>
+    <a href="scheidsrechters.html" class="nav-link">🎯 Scheidsrechters</a>
+  </nav>
+</header>
+
+<div class="back-link">
+  <a href="index.html">&#8592; Terug naar alle landen</a>
+</div>
+
+<div id="content"></div>
+
+<script src="data/teams.js"></script>
+<script src="data/teaminfo.js"></script>
+<script src="data/playerimages.js"></script>
+<script>
+(function() {
+  var params = new URLSearchParams(window.location.search);
+  var teamId = parseInt(params.get('id'));
+  var contentEl = document.getElementById('content');
+
+  var team = teamsData.teams.find(function(t) { return t.id === teamId; });
+  if (!team) {
+    contentEl.innerHTML = '<div class="not-found"><h2>Team niet gevonden</h2><p>Ga terug naar <a href="index.html" style="color:#FFD700">alle landen</a></p></div>';
+    return;
+  }
+
+  var info = teamInfoData[teamId] || {};
+  document.title = 'WK 2026 - ' + team.name;
+
+  var flagUrl = 'https://flagcdn.com/w320/' + team.code + '.png';
+
+  var posNames = { DL: 'Doelmannen', VD: 'Verdedigers', MV: 'Middenvelders', AA: 'Aanvallers' };
+  var posOrder = ['DL', 'VD', 'MV', 'AA'];
+
+  var trophyStr = '';
+  if (info.titles && info.titles > 0) {
+    for (var i = 0; i < info.titles; i++) trophyStr += '&#9733; ';
+    trophyStr = trophyStr.trim();
+  }
+
+  var html = '';
+
+  // Hero
+  html += '<div class="hero">';
+  html += '<img class="hero-flag" src="' + flagUrl + '" alt="' + team.name + '"' +
+          ' onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'">';
+  html += '<div class="hero-flag-fb" style="display:none">' + team.code.toUpperCase() + '</div>';
+  html += '<div class="hero-info">';
+  html += '<h2>' + team.name + '</h2>';
+  html += '<span class="group-badge">Groep ' + team.group + '</span>';
+  html += '<span class="conf-badge conf-' + team.confederation + '">' + team.confederation + '</span>';
+  if (team.host) html += '<span class="host-badge">&#127968; Gastland</span>';
+  if (info.coach) html += '<p style="margin-top:10px;opacity:0.6;font-size:0.85rem">Bondscoach: <strong style="color:#fff;opacity:1">' + info.coach + '</strong></p>';
+  html += '</div></div>';
+
+  // Info grid
+  html += '<div class="info-grid">';
+  if (info.fifaRanking) {
+    html += '<div class="info-card"><div class="ic-value">#' + info.fifaRanking + '</div><div class="ic-label">FIFA Ranking</div></div>';
+  }
+  if (info.wcAppearances) {
+    html += '<div class="info-card"><div class="ic-value">' + info.wcAppearances + 'x</div><div class="ic-label">WK Deelnames</div></div>';
+  }
+  if (info.titles !== undefined) {
+    html += '<div class="info-card"><div class="ic-value trophy">' + (info.titles > 0 ? trophyStr : '&mdash;') + '</div><div class="ic-label">Wereldtitels</div></div>';
+  }
+  if (info.bestResult) {
+    html += '<div class="info-card"><div class="ic-text" style="margin-top:8px">' + info.bestResult + '</div><div class="ic-label" style="margin-top:6px">Beste WK Resultaat</div></div>';
+  }
+  html += '</div>';
+
+  // Description
+  if (info.description) {
+    html += '<div class="description"><p>' + info.description + '</p></div>';
+  }
+
+  // Squad
+  html += '<div class="squad-section">';
+  html += '<div class="squad-header"><span>&#128101;</span> Selectie WK 2026</div>';
+
+  if (info.squad && info.squad.length > 0) {
+    var byPos = {};
+    posOrder.forEach(function(p) { byPos[p] = []; });
+    info.squad.forEach(function(player) {
+      if (byPos[player.pos]) byPos[player.pos].push(player);
+    });
+
+    posOrder.forEach(function(pos) {
+      if (byPos[pos].length === 0) return;
+      html += '<div class="pos-group pos-' + pos + '">';
+      html += '<div class="pos-group-title">' + posNames[pos] + ' (' + byPos[pos].length + ')</div>';
+      byPos[pos].forEach(function(p) {
+        var photoUrl = (typeof playerPhotos !== 'undefined' && playerPhotos[p.name]) ? playerPhotos[p.name] : '';
+        var photoHtml = photoUrl
+          ? '<img src="' + photoUrl + '" alt="' + p.name + '" onerror="this.parentElement.innerHTML=\'<div class=player-photo-placeholder>⚽</div>\'">'
+          : '<div class="player-photo-placeholder">⚽</div>';
+        html += '<div class="player-card">';
+        html += '<div class="player-photo-wrap">' + photoHtml + '</div>';
+        html += '<div class="player-num">' + p.num + '</div>';
+        html += '<span class="player-name">' + p.name + '</span>';
+        html += '<span class="player-club">' + p.club + '</span>';
+        html += '</div>';
+      });
+      html += '</div>';
+    });
+  } else {
+    html += '<div class="squad-empty"><p>&#128221; Selectie wordt binnenkort bekendgemaakt</p></div>';
+  }
+
+  html += '</div>';
+  contentEl.innerHTML = html;
+})();
+</script>
+</body>
+</html>
