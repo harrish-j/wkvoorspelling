@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WK 2026 - Speler Detail</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #0d1b2e; color: #fff; min-height: 100vh; }
+
+    header { background: linear-gradient(135deg, #003087 0%, #006400 100%); padding: 32px 20px 0; text-align: center; box-shadow: 0 4px 24px rgba(0,0,0,0.6); }
+    header h1 { font-size: 2.2rem; font-weight: 800; text-shadow: 2px 2px 6px rgba(0,0,0,0.4); }
+    header p  { margin-top: 4px; font-size: 0.95rem; opacity: 0.8; letter-spacing: 1px; }
+    .site-nav { display: flex; justify-content: center; gap: 2px; margin-top: 16px; padding: 0 20px; flex-wrap: wrap; }
+    .nav-link { color: rgba(255,255,255,0.65); text-decoration: none; padding: 10px 22px; font-weight: 600; font-size: 0.88rem; letter-spacing: 0.5px; border-bottom: 3px solid transparent; transition: all 0.18s; }
+    .nav-link:hover { color: #fff; }
+    .nav-link.active { color: #FFD700; border-bottom-color: #FFD700; }
+
+    /* ── Back link ── */
+    .back-link { max-width: 900px; margin: 0 auto; padding: 20px 20px 0; }
+    .back-link a {
+      color: rgba(255,255,255,0.5); text-decoration: none; font-size: 0.85rem;
+      font-weight: 600; transition: color 0.15s;
+    }
+    .back-link a:hover { color: #FFD700; }
+
+    /* ── Player Hero ── */
+    .player-hero {
+      max-width: 900px; margin: 0 auto; padding: 30px 20px 20px;
+      display: flex; align-items: center; gap: 24px; flex-wrap: wrap;
+    }
+    .player-photo-large {
+      width: 120px; height: 120px; border-radius: 50%; overflow: hidden;
+      flex-shrink: 0; background: #1a2a44; border: 3px solid rgba(255,215,0,0.3);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .player-photo-large img { width: 100%; height: 100%; object-fit: cover; }
+    .player-photo-large .photo-placeholder { font-size: 2.5rem; opacity: 0.3; }
+
+    .player-hero-info { flex: 1; min-width: 200px; }
+    .player-hero-info h2 { font-size: 2rem; font-weight: 800; margin-bottom: 4px; }
+    .player-hero-info .pos-badge-large {
+      display: inline-block; padding: 4px 14px; border-radius: 16px;
+      font-weight: 800; font-size: 0.82rem; letter-spacing: 0.5px; margin-right: 6px;
+    }
+    .badge-DL { background: rgba(255,165,0,0.2); color: #ffa500; }
+    .badge-VD { background: rgba(77,166,255,0.2); color: #4da6ff; }
+    .badge-MV { background: rgba(80,200,120,0.2); color: #50c878; }
+    .badge-AA { background: rgba(255,107,107,0.2); color: #ff6b6b; }
+
+    .club-badge {
+      display: inline-block; padding: 4px 12px; border-radius: 16px;
+      background: rgba(255,255,255,0.1); font-size: 0.78rem; font-weight: 700;
+    }
+    .player-hero-info .team-link {
+      display: block; margin-top: 8px; font-size: 0.85rem; opacity: 0.6;
+    }
+    .player-hero-info .team-link a {
+      color: #FFD700; text-decoration: none; font-weight: 600;
+    }
+    .player-hero-info .team-link a:hover { text-decoration: underline; }
+
+    /* ── Info Grid ── */
+    .info-grid {
+      max-width: 900px; margin: 0 auto; padding: 0 20px 20px;
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px;
+    }
+    .info-card {
+      background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 12px; padding: 14px; text-align: center;
+    }
+    .info-card .ic-value { font-size: 1.3rem; font-weight: 800; color: #FFD700; }
+    .info-card .ic-label { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1px; opacity: 0.5; margin-top: 4px; }
+    .info-card .ic-text { font-size: 0.8rem; font-weight: 600; margin-top: 2px; }
+
+    /* ── Description ── */
+    .description {
+      max-width: 900px; margin: 0 auto; padding: 0 20px 24px;
+    }
+    .description p {
+      background: rgba(255,255,255,0.04); border-left: 4px solid #FFD700;
+      border-radius: 0 12px 12px 0; padding: 16px 20px;
+      font-size: 0.92rem; line-height: 1.65; opacity: 0.85;
+    }
+
+    /* ── Career Timeline ── */
+    .career-section {
+      max-width: 900px; margin: 0 auto; padding: 0 20px 40px;
+    }
+    .career-header {
+      font-size: 1.2rem; font-weight: 800; margin-bottom: 16px;
+      padding-bottom: 8px; border-bottom: 2px solid rgba(255,215,0,0.2);
+    }
+    .career-header span { color: #FFD700; }
+
+    .career-timeline { position: relative; padding-left: 24px; }
+    .career-timeline::before {
+      content: ''; position: absolute; left: 7px; top: 8px; bottom: 8px;
+      width: 2px; background: rgba(255,215,0,0.15); border-radius: 1px;
+    }
+
+    .career-item {
+      position: relative; margin-bottom: 10px;
+      background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 10px; padding: 14px 16px;
+      display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+      transition: all 0.15s;
+    }
+    .career-item:hover {
+      background: rgba(255,255,255,0.1); border-color: rgba(255,215,0,0.3);
+      transform: translateX(4px);
+    }
+    .career-item::before {
+      content: ''; position: absolute; left: -21px; top: 50%;
+      transform: translateY(-50%);
+      width: 12px; height: 12px; border-radius: 50%;
+      background: #FFD700; border: 2px solid #0d1b2e;
+    }
+    .career-item.loan::before { background: #50c878; }
+    .career-item.youth::before { background: #4da6ff; }
+    .career-item.current::before {
+      background: #FFD700;
+      box-shadow: 0 0 8px rgba(255,215,0,0.5);
+    }
+
+    .career-years {
+      font-size: 0.78rem; font-weight: 700; color: #FFD700;
+      min-width: 100px; flex-shrink: 0;
+    }
+    .career-club { font-weight: 700; font-size: 0.92rem; flex: 1; min-width: 120px; }
+    .career-detail {
+      font-size: 0.72rem; padding: 2px 8px; border-radius: 8px;
+      font-weight: 700; letter-spacing: 0.5px;
+    }
+    .career-detail.loan { background: rgba(80,200,120,0.15); color: #50c878; }
+    .career-detail.youth { background: rgba(77,166,255,0.15); color: #4da6ff; }
+    .career-detail.regular { background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.4); }
+
+    .career-stats {
+      display: flex; gap: 12px; font-size: 0.78rem; opacity: 0.65;
+      margin-left: auto;
+    }
+    .career-stats strong { color: #fff; opacity: 1; font-weight: 700; }
+
+    /* ── International Stats ── */
+    .intl-section {
+      max-width: 900px; margin: 0 auto; padding: 0 20px 40px;
+    }
+    .intl-header {
+      font-size: 1.2rem; font-weight: 800; margin-bottom: 16px;
+      padding-bottom: 8px; border-bottom: 2px solid rgba(255,215,0,0.2);
+    }
+    .intl-header span { color: #FFD700; }
+    .intl-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px;
+    }
+    .intl-card {
+      background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 12px; padding: 16px; text-align: center;
+    }
+    .intl-card .ic-value { font-size: 1.5rem; font-weight: 800; color: #FFD700; }
+    .intl-card .ic-label { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1px; opacity: 0.5; margin-top: 4px; }
+
+    /* ── Not found ── */
+    .not-found { text-align: center; padding: 80px 20px; }
+    .not-found h2 { font-size: 1.5rem; margin-bottom: 10px; }
+    .not-found p { opacity: 0.5; }
+    .not-found a { color: #FFD700; }
+
+    /* ── Responsive ── */
+    @media (max-width: 600px) {
+      header h1 { font-size: 1.5rem; }
+      .player-hero { flex-direction: column; text-align: center; }
+      .player-photo-large { width: 100px; height: 100px; }
+      .player-hero-info h2 { font-size: 1.5rem; }
+      .info-grid { grid-template-columns: repeat(2, 1fr); }
+      .career-item { flex-direction: column; align-items: flex-start; gap: 6px; }
+      .career-stats { margin-left: 0; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>&#9917; WK 2026 Voorspelling</h1>
+  <p>FIFA Wereldkampioenschap &middot; USA &middot; Canada &middot; Mexico</p>
+  <nav class="site-nav">
+    <a href="index.html" class="nav-link active">&#127757; Landen</a>
+    <a href="groepen.html" class="nav-link">&#128202; Groepen</a>
+    <a href="schema.html" class="nav-link">&#128197; Groepsfase</a>
+    <a href="knockout.html" class="nav-link">&#127942; Knockout</a>
+    <a href="stadions.html" class="nav-link">&#127951; Stadions</a>
+    <a href="scheidsrechters.html" class="nav-link">🎯 Scheidsrechters</a>
+  </nav>
+</header>
+
+<div class="back-link" id="back-link">
+  <a href="index.html">&#8592; Terug naar alle landen</a>
+</div>
+
+<div id="content"></div>
+
+<script src="data/teams.js"></script>
+<script src="data/teaminfo.js"></script>
+<script src="data/playerimages.js"></script>
+<script src="data/playercareer.js"></script>
+<script src="data/careers_group1.js"></script>
+<script src="data/careers_group2.js"></script>
+<script src="data/careers_group3.js"></script>
+<script src="data/careers_group4.js"></script>
+<script>
+(function() {
+  var params = new URLSearchParams(window.location.search);
+  var playerName = params.get('name');
+  var teamId = parseInt(params.get('team'));
+  var contentEl = document.getElementById('content');
+  var backLinkEl = document.getElementById('back-link');
+
+  if (!playerName) {
+    contentEl.innerHTML = '<div class="not-found"><h2>Speler niet gevonden</h2><p>Ga terug naar <a href="index.html">alle landen</a></p></div>';
+    return;
+  }
+
+  playerName = decodeURIComponent(playerName);
+
+  // Find player career data
+  var career = playerCareerData[playerName];
+
+  // Find team info
+  var team = null;
+  if (teamId) {
+    team = teamsData.teams.find(function(t) { return t.id === teamId; });
+  } else if (career && career.teamId) {
+    team = teamsData.teams.find(function(t) { return t.id === career.teamId; });
+  }
+
+  // Find player in squad for position info
+  var playerSquadInfo = null;
+  if (team) {
+    var info = teamInfoData[team.id] || {};
+    if (info.squad) {
+      playerSquadInfo = info.squad.find(function(p) { return p.name === playerName; });
+    }
+  }
+
+  // Set back link
+  if (team) {
+    backLinkEl.innerHTML = '<a href="land.html?id=' + team.id + '">&#8592; Terug naar ' + team.name + '</a>';
+  }
+
+  document.title = 'WK 2026 - ' + playerName;
+
+  var posNames = { DL: 'Doelman', VD: 'Verdediger', MV: 'Middenvelder', AA: 'Aanvaller' };
+  var posClass = playerSquadInfo ? playerSquadInfo.pos : '';
+
+  // Get photo
+  var photoUrl = (typeof playerPhotos !== 'undefined' && playerPhotos[playerName]) ? playerPhotos[playerName] : '';
+
+  var html = '';
+
+  // Player Hero
+  html += '<div class="player-hero">';
+  html += '<div class="player-photo-large">';
+  if (photoUrl) {
+    html += '<img src="' + photoUrl + '" alt="' + playerName + '" onerror="this.parentElement.innerHTML=\'<div class=player-photo-placeholder>⚽</div>\'">';
+  } else {
+    html += '<div class="photo-placeholder">⚽</div>';
+  }
+  html += '</div>';
+  html += '<div class="player-hero-info">';
+  html += '<h2>' + playerName + '</h2>';
+  if (posClass) {
+    html += '<span class="pos-badge-large badge-' + posClass + '">' + posNames[posClass] + '</span>';
+  }
+  if (career && career.currentClub) {
+    html += '<span class="club-badge">' + career.currentClub + '</span>';
+  } else if (playerSquadInfo && playerSquadInfo.club) {
+    html += '<span class="club-badge">' + playerSquadInfo.club + '</span>';
+  }
+  if (team) {
+    html += '<div class="team-link">Nationaal team: <a href="land.html?id=' + team.id + '">' + team.name + '</a></div>';
+  }
+  html += '</div></div>';
+
+  if (career) {
+    // Info Grid
+    html += '<div class="info-grid">';
+    if (career.dateOfBirth) {
+      html += '<div class="info-card"><div class="ic-text" style="margin-top:4px;font-size:0.85rem">' + career.dateOfBirth + '</div><div class="ic-label">Geboortedatum</div></div>';
+    }
+    if (career.placeOfBirth) {
+      html += '<div class="info-card"><div class="ic-text" style="margin-top:4px;font-size:0.8rem">' + career.placeOfBirth + '</div><div class="ic-label">Geboorteplaats</div></div>';
+    }
+    if (career.height) {
+      html += '<div class="info-card"><div class="ic-value">' + career.height + '</div><div class="ic-label">Lengte</div></div>';
+    }
+    if (career.foot) {
+      html += '<div class="info-card"><div class="ic-text" style="margin-top:4px;font-size:0.95rem">' + career.foot + '</div><div class="ic-label">Voorkeur Voet</div></div>';
+    }
+    if (career.nationality) {
+      html += '<div class="info-card"><div class="ic-text" style="margin-top:4px;font-size:0.82rem">' + career.nationality + '</div><div class="ic-label">Nationaliteit</div></div>';
+    }
+    if (career.position) {
+      html += '<div class="info-card"><div class="ic-text" style="margin-top:4px;font-size:0.82rem">' + career.position + '</div><div class="ic-label">Positie</div></div>';
+    }
+    html += '</div>';
+
+    // Description
+    if (career.description) {
+      html += '<div class="description"><p>' + career.description + '</p></div>';
+    }
+
+    // International stats
+    html += '<div class="intl-section">';
+    html += '<div class="intl-header"><span>🇳🇱</span> Interlandcarrière</div>';
+    html += '<div class="intl-grid">';
+    if (career.intlCaps !== undefined) {
+      html += '<div class="intl-card"><div class="ic-value">' + career.intlCaps + '</div><div class="ic-label">Interlands</div></div>';
+    }
+    if (career.intlGoals !== undefined) {
+      html += '<div class="intl-card"><div class="ic-value">' + career.intlGoals + '</div><div class="ic-label">Interlandgoals</div></div>';
+    }
+    if (career.intlDebut) {
+      html += '<div class="intl-card"><div class="ic-text" style="margin-top:6px;font-size:0.82rem">' + career.intlDebut + '</div><div class="ic-label">Debuut</div></div>';
+    }
+    html += '</div></div>';
+
+    // Career Timeline
+    if (career.career && career.career.length > 0) {
+      html += '<div class="career-section">';
+      html += '<div class="career-header"><span>📋</span> Clubcarrière</div>';
+      html += '<div class="career-timeline">';
+
+      career.career.forEach(function(entry, idx) {
+        var isLoan = entry.detail && entry.detail.toLowerCase().indexOf('huur') !== -1;
+        var isYouth = entry.detail && entry.detail.toLowerCase().indexOf('jeugd') !== -1;
+        var isCurrent = entry.years && entry.years.indexOf('heden') !== -1;
+        var itemClass = 'career-item';
+        if (isCurrent) itemClass += ' current';
+        else if (isLoan) itemClass += ' loan';
+        else if (isYouth) itemClass += ' youth';
+
+        html += '<div class="' + itemClass + '">';
+        html += '<span class="career-years">' + entry.years + '</span>';
+        html += '<span class="career-club">' + entry.club + '</span>';
+
+        if (entry.detail) {
+          var detailClass = isLoan ? 'loan' : (isYouth ? 'youth' : 'regular');
+          html += '<span class="career-detail ' + detailClass + '">' + entry.detail + '</span>';
+        }
+
+        if (entry.apps !== '–' && entry.apps !== undefined) {
+          html += '<div class="career-stats">';
+          html += '<span><strong>' + entry.apps + '</strong> wed.</span>';
+          html += '<span><strong>' + entry.goals + '</strong> goals</span>';
+          html += '</div>';
+        }
+
+        html += '</div>';
+      });
+
+      html += '</div></div>';
+    }
+  } else {
+    // No career data available
+    html += '<div class="description"><p style="text-align:center;opacity:0.4">&#128221; Carrière-informatie wordt binnenkort toegevoegd voor ' + playerName + '</p></div>';
+  }
+
+  contentEl.innerHTML = html;
+})();
+</script>
+</body>
+</html>

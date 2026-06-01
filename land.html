@@ -137,6 +137,10 @@
     .pos-AA .player-num { background: rgba(255,107,107,0.2); color: #ff6b6b; }
 
     .player-name { font-weight: 700; font-size: 0.9rem; flex: 1; }
+    .player-name a {
+      color: #fff; text-decoration: none; transition: color 0.15s;
+    }
+    .player-name a:hover { color: #FFD700; }
     .player-club { font-size: 0.75rem; opacity: 0.5; text-align: right; }
 
     .pos-badge {
@@ -200,6 +204,11 @@
 <script src="data/teams.js"></script>
 <script src="data/teaminfo.js"></script>
 <script src="data/playerimages.js"></script>
+<script src="data/playercareer.js"></script>
+<script src="data/careers_group1.js"></script>
+<script src="data/careers_group2.js"></script>
+<script src="data/careers_group3.js"></script>
+<script src="data/careers_group4.js"></script>
 <script>
 (function() {
   var params = new URLSearchParams(window.location.search);
@@ -282,10 +291,16 @@
         var photoHtml = photoUrl
           ? '<img src="' + photoUrl + '" alt="' + p.name + '" onerror="this.parentElement.innerHTML=\'<div class=player-photo-placeholder>⚽</div>\'">'
           : '<div class="player-photo-placeholder">⚽</div>';
+        var playerUrl = 'speler.html?name=' + encodeURIComponent(p.name) + '&team=' + teamId;
+        var hasCareer = (typeof playerCareerData !== 'undefined' && playerCareerData[p.name]);
         html += '<div class="player-card">';
         html += '<div class="player-photo-wrap">' + photoHtml + '</div>';
         html += '<div class="player-num">' + p.num + '</div>';
-        html += '<span class="player-name">' + p.name + '</span>';
+        if (hasCareer) {
+          html += '<span class="player-name"><a href="' + playerUrl + '">' + p.name + '</a></span>';
+        } else {
+          html += '<span class="player-name">' + p.name + '</span>';
+        }
         html += '<span class="player-club">' + p.club + '</span>';
         html += '</div>';
       });
