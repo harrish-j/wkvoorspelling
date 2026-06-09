@@ -97,7 +97,8 @@
       font-size: 0.8rem; font-weight: 800; color: #888;
       background: #f7f8fa; border-radius: 8px; padding: 6px 4px;
     }
-    .match-time-label { font-size: 0.6rem; font-weight: 600; color: #aaa; display: block; margin-top: 2px; }
+    .match-time-label { font-size: 0.55rem; font-weight: 500; color: #bbb; display: block; margin-top: 2px; }
+    .match-time-nl { font-size: 0.7rem; font-weight: 800; color: #e67e22; display: block; margin-top: 2px; }
 
     .match-bottom {
       display: flex; align-items: center; justify-content: center;
@@ -234,6 +235,9 @@
         var awayFlag = 'https://flagcdn.com/w80/' + away.code + '.png';
         var venueFlag = venue ? 'https://flagcdn.com/w40/' + venue.country + '.png' : '';
 
+        // Nederlandse tijd uit officieel schema (bron: FIFA/BetCity)
+        var timeNL = match.timeNL || '';
+
         card.innerHTML =
           '<div class="match-top">' +
             '<span class="match-group">Groep ' + match.group + '</span>' +
@@ -248,7 +252,8 @@
             '</div>' +
             '<div class="match-vs">' +
               'VS' +
-              '<span class="match-time-label">' + match.time + ' uur</span>' +
+              (timeNL ? '<span class="match-time-nl">🇳🇱 ' + timeNL + ' uur</span>' : '') +
+              '<span class="match-time-label">lokaal ' + match.time + '</span>' +
             '</div>' +
             '<div class="match-team away">' +
               '<img class="match-team-flag" src="' + awayFlag + '" alt="' + away.name + '"' +
