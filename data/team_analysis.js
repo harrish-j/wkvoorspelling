@@ -21,7 +21,7 @@ const teamAnalysisData = {
 
     // ── WK-deelnames ──
     history: [
-      { year: 1930, host: "Uruguay",       result: "Groepsfase",   tag: "group",  detail: "Eerste WK ooit – drie nederlagen" },
+      { year: 1930, host: "Uruguay",       result: "Groepsfase",   tag: "group",  detail: "Eerste WK-wedstrijd ooit: Frankrijk 4-1 Mexico. Manuel Rosas scoorde de eerste strafschop in WK-geschiedenis." },
       { year: 1950, host: "Brazilië",      result: "Groepsfase",   tag: "group",  detail: "Geen overwinning in drie duels" },
       { year: 1954, host: "Zwitserland",   result: "Groepsfase",   tag: "group",  detail: "Twee wedstrijden, twee nederlagen" },
       { year: 1958, host: "Zweden",        result: "Groepsfase",   tag: "group",  detail: "Eerste punt: 1-1 tegen Wales" },
@@ -29,14 +29,14 @@ const teamAnalysisData = {
       { year: 1966, host: "Engeland",      result: "Groepsfase",   tag: "group",  detail: "Twee gelijke spelen, één nederlaag" },
       { year: 1970, host: "Mexico 🏠",     result: "Kwartfinale",  tag: "qf",     detail: "Als gastland naar de kwartfinale – verlies 1-4 tegen Italië" },
       { year: 1978, host: "Argentinië",    result: "Groepsfase",   tag: "group",  detail: "Drie nederlagen, nul punten" },
-      { year: 1986, host: "Mexico 🏠",     result: "Kwartfinale",  tag: "qf",     detail: "Beste WK ooit – verlies na strafschoppen tegen West-Duitsland" },
+      { year: 1986, host: "Mexico 🏠",     result: "Kwartfinale",  tag: "qf",     detail: "Beste WK ooit – ongeslagen in reguliere speeltijd. Verlies na strafschoppen tegen West-Duitsland (0-0 n.v., 1-4 pen)" },
       { year: 1994, host: "VS",            result: "Achtste finale", tag: "r16",  detail: "1-3 verlies tegen Bulgarije" },
       { year: 1998, host: "Frankrijk",     result: "Achtste finale", tag: "r16",  detail: "1-2 verlies tegen Duitsland" },
       { year: 2002, host: "Japan/Z-Korea", result: "Achtste finale", tag: "r16",  detail: "Pijnlijk 0-2 verlies tegen aartsrivaal VS" },
       { year: 2006, host: "Duitsland",     result: "Achtste finale", tag: "r16",  detail: "1-2 n.v. tegen Argentinië – Maxi Rodríguez' wereldgoal" },
-      { year: 2010, host: "Zuid-Afrika",    result: "Achtste finale", tag: "r16",  detail: "1-3 tegen Argentinië – controversieel buitenspeldoel Tévez" },
-      { year: 2014, host: "Brazilië",      result: "Achtste finale", tag: "r16",  detail: "1-2 tegen Nederland – 'No era penal!' Robbens schwalbe in 88'" },
-      { year: 2018, host: "Rusland",       result: "Achtste finale", tag: "r16",  detail: "0-2 kansloos tegen Brazilië" },
+      { year: 2010, host: "Zuid-Afrika",    result: "Achtste finale", tag: "r16",  detail: "1-1 opening van het toernooi vs gastland ZA; 2-0 winst tegen titelhouder Frankrijk; 1-3 verlies tegen Argentinië (buitenspeldoel Tévez)" },
+      { year: 2014, host: "Brazilië",      result: "Achtste finale", tag: "r16",  detail: "Ochoa's legendarische reddingen vs Brazilië (0-0); 3-1 winst tegen Kroatië; 'No era penal!' in 88e minuut vs Nederland (1-2 n.v.)" },
+      { year: 2018, host: "Rusland",       result: "Achtste finale", tag: "r16",  detail: "Sensationele 1-0 zege op titelhouder Duitsland (Lozano); 2-1 winst vs Zuid-Korea; 0-2 kansloos tegen Brazilië in achtste finale" },
       { year: 2022, host: "Qatar",         result: "Groepsfase",   tag: "group",  detail: "Uitgeschakeld op doelsaldo – einde van 28 jaar achtste finales" }
     ],
 
@@ -44,7 +44,7 @@ const teamAnalysisData = {
     quintoPartido: {
       intro: "Tussen 1994 en 2018 bereikte Mexico zeven opeenvolgende keren de achtste finale van het WK – maar kwam er nooit doorheen. Deze pijnlijke traditie staat in Mexico bekend als <strong>'El Quinto Partido'</strong> (de vijfde wedstrijd).",
       matches: [
-        { year: 1994, opponent: "Bulgarije",   score: "1-3", detail: "Rode kaart Bernal in de 57e minuut brak Mexico" },
+        { year: 1994, opponent: "Bulgarije",   score: "1-1 n.v. (1-3 pen)", detail: "Na verlenging gelijk, verloren op strafschoppen" },
         { year: 1998, opponent: "Duitsland",    score: "1-2", detail: "Hernández scoorde, maar Klinsmann en Bierhoff beslisten" },
         { year: 2002, opponent: "Verenigde Staten", score: "0-2", detail: "Vernederend verlies tegen aartsrivaal op Aziatische bodem" },
         { year: 2006, opponent: "Argentinië",   score: "1-2 n.v.", detail: "Maxi Rodríguez' volley vanuit 35 meter is een WK-icoon" },
@@ -61,17 +61,17 @@ const teamAnalysisData = {
       tournaments: [
         {
           year: 1970,
-          matches: 4, wins: 2, draws: 0, losses: 2,
-          detail: "Groepsfase gewonnen met overtuiging (4-0 vs El Salvador). In de kwartfinale kansloos 1-4 tegen een legendarisch Italië."
+          matches: 4, wins: 2, draws: 1, losses: 1,
+          detail: "Groep gewonnen (0-0 vs USSR, 4-0 vs El Salvador, 1-0 vs België). In de kwartfinale 1-4 verloren van Italië – dat de finale bereikte."
         },
         {
           year: 1986,
-          matches: 5, wins: 3, draws: 1, losses: 1,
-          detail: "Het beste Mexicaanse WK ooit. Hugo Sánchez en co. verloren pas in de kwartfinale na strafschoppen tegen West-Duitsland (0-0, 1-4 pen)."
+          matches: 5, wins: 3, draws: 2, losses: 0,
+          detail: "Ongeslagen in reguliere speeltijd: 2-1 vs België, 1-1 vs Paraguay, 1-0 vs Irak, 2-0 vs Bulgarije (achtste finale). Pas in kwartfinale uitgeschakeld na strafschoppen (0-0, 1-4 pen) vs West-Duitsland."
         }
       ],
-      combined: { matches: 9, wins: 5, draws: 1, losses: 3, goalsFor: 16, goalsAgainst: 13 },
-      conclusion: "Met een winpercentage van <strong>56%</strong> als gastland (vs 28% totaal) is het thuisvoordeel voor Mexico enorm. In 2026 speelt El Tri hun groepswedstrijden in het Estadio Azteca en Estadio BBVA – beide in Mexico."
+      combined: { matches: 9, wins: 5, draws: 3, losses: 1, goalsFor: 11, goalsAgainst: 6 },
+      conclusion: "Met een winpercentage van <strong>56%</strong> als gastland (vs 28% totaal) is het thuisvoordeel voor Mexico enorm. In reguliere speeltijd bleef El Tri in 1986 zelfs ongeslagen. In 2026 speelt El Tri hun groepswedstrijden in het Estadio Azteca en Estadio BBVA – beide in Mexico. Het Azteca (83.000 plaatsen) was ook het decor van de WK-finales van 1970 en 1986."
     },
 
     // ── Head-to-Head Groep A ──
@@ -83,9 +83,9 @@ const teamAnalysisData = {
         h2hSummary: "1 WK-duel: 1 gelijkspel",
         verdict: "even",
         matches: [
-          { tournament: "WK 2010 Groepsfase", score: "1-1", detail: "Opening van het toernooi in Johannesburg. Márquez scoorde voor Mexico; Tshabalala voor de Bafana Bafana met een prachtig schot." }
+          { tournament: "WK 2010 Groepsfase", score: "1-1", detail: "Openingswedstrijd van het toernooi in Johannesburg. Tshabalala scoorde in de 55e minuut; Márquez maakte gelijk in de 79e. In 2026 treffen ze elkaar opnieuw in de openingswedstrijd – nu met Mexico als gastland." }
         ],
-        analysis: "Zuid-Afrika heeft sinds het WK 2010 geen WK meer gespeeld en keert terug na 16 jaar afwezigheid. Mexico is op papier favoriet, maar het WK 2010-precedent toont dat Zuid-Afrika niet onderschat mag worden."
+        analysis: "Zuid-Afrika heeft sinds het WK 2010 geen WK meer gespeeld en keert terug na 16 jaar afwezigheid. Mexico is op papier favoriet, maar de openingswedstrijd brengt altijd extra druk – zeker als gastland."
       },
       {
         name: "Zuid-Korea",
@@ -94,10 +94,10 @@ const teamAnalysisData = {
         h2hSummary: "2 WK-duels: 2× winst Mexico",
         verdict: "fav",
         matches: [
-          { tournament: "WK 1998 Groepsfase", score: "3-1", detail: "Overtuigende zege met goals van Peláez, Hernández en García Aspe." },
-          { tournament: "WK 2018 Groepsfase", score: "2-1", detail: "Vela en Hernández scoorden. Ironisch: Zuid-Korea versloeg later Duitsland 2-0 en hielp Mexico naar de achtste finale." }
+          { tournament: "WK 1998 Groepsfase", score: "3-1", detail: "Overtuigende zege in Lyon. Mexico domineerde de wedstrijd volledig." },
+          { tournament: "WK 2018 Groepsfase", score: "2-1", detail: "Vela (strafschop 26') en Hernández (66', zijn 50e interlandgoal) bezegelden de zege. Ironisch: Zuid-Korea versloeg later Duitsland 2-0 en hielp Mexico naar de achtste finale." }
         ],
-        analysis: "Zuid-Korea is een stuk sterker geworden met spelers als Son Heung-min (Tottenham) en Lee Kang-in (PSG). De Taegeuk Warriors bereikten de halve finale in 2002 als gastland en zijn altijd gevaarlijk op WK's."
+        analysis: "Mexico heeft beide WK-duels gewonnen tegen Zuid-Korea. Maar de Taegeuk Warriors zijn flink sterker geworden met spelers als Son Heung-min (Tottenham) en Lee Kang-in (PSG). In 2002 bereikten zij als gastland de halve finale."
       },
       {
         name: "Tsjechië",
@@ -106,9 +106,9 @@ const teamAnalysisData = {
         h2hSummary: "1 WK-duel: 1× winst Mexico",
         verdict: "fav",
         matches: [
-          { tournament: "WK 1962 Groepsfase", score: "3-1", detail: "Mexico versloeg Tsjechoslowakije voor hun eerste WK-overwinning ooit. Historisch moment voor het Mexicaanse voetbal." }
+          { tournament: "WK 1962 Groepsfase", score: "3-1", detail: "Mexico versloeg Tsjechoslowakije voor hun allereerste WK-overwinning – na vijf toernooien zonder zege. Mašek scoorde al na 15 seconden voor Tsjechoslowakije (destijds 2e snelste WK-goal ooit), maar Mexico kwam knap terug." }
         ],
-        analysis: "Tsjechië kwalificeert zich voor het eerst sinds 2006 voor een WK. Het team mist de supersterren van weleer (Nedvěd, Rosický, Čech), maar heeft een solide Europese kern. Als laagst geplaatste team in Groep A zullen ze de underdog zijn."
+        analysis: "Het huidige Tsjechië kwalificeert zich voor het eerst sinds 2006 voor een WK. Het team mist de supersterren van weleer (Nedvěd, Rosický, Čech), maar heeft een solide Europese kern. Als laagst geplaatste team in Groep A zijn ze de underdog."
       }
     ],
 
