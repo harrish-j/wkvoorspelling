@@ -162,6 +162,109 @@
     }
     .back-link a:hover { color: #FFD700; }
 
+    /* ── Analysis Section ── */
+    .analysis-section {
+      max-width: 900px; margin: 0 auto; padding: 0 20px 40px;
+    }
+    .analysis-header {
+      font-size: 1.2rem; font-weight: 800; margin-bottom: 20px;
+      padding-bottom: 8px; border-bottom: 2px solid rgba(255,215,0,0.2);
+    }
+    .analysis-header span { color: #FFD700; }
+    .analysis-block {
+      background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 14px; padding: 20px 24px; margin-bottom: 16px;
+    }
+    .analysis-block h3 {
+      font-size: 1rem; font-weight: 800; color: #FFD700; margin-bottom: 12px;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .analysis-block p {
+      font-size: 0.88rem; line-height: 1.7; opacity: 0.85; margin-bottom: 10px;
+    }
+    .analysis-block p:last-child { margin-bottom: 0; }
+    .analysis-block strong { color: #FFD700; font-weight: 700; }
+    .analysis-block em { color: #e67e22; font-style: normal; font-weight: 600; }
+
+    /* Stats table inside analysis */
+    .stats-table {
+      width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 0.82rem;
+    }
+    .stats-table th {
+      text-align: left; padding: 8px 12px; font-size: 0.68rem; text-transform: uppercase;
+      letter-spacing: 1px; color: #FFD700; border-bottom: 2px solid rgba(255,215,0,0.2);
+      font-weight: 700;
+    }
+    .stats-table td {
+      padding: 7px 12px; border-bottom: 1px solid rgba(255,255,255,0.06);
+      opacity: 0.85;
+    }
+    .stats-table tr:hover td { background: rgba(255,255,255,0.04); }
+    .stats-table .highlight { color: #50c878; font-weight: 700; }
+    .stats-table .warning { color: #ff6b6b; font-weight: 700; }
+    .stats-table .neutral { color: #e67e22; font-weight: 700; }
+
+    /* WK History mini-timeline */
+    .wk-timeline {
+      display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0;
+    }
+    .wk-chip {
+      padding: 6px 12px; border-radius: 20px; font-size: 0.72rem; font-weight: 700;
+      border: 1px solid rgba(255,255,255,0.1); display: flex; flex-direction: column;
+      align-items: center; gap: 2px; min-width: 55px;
+    }
+    .wk-chip .wk-year { font-size: 0.78rem; }
+    .wk-chip .wk-result { font-size: 0.58rem; opacity: 0.7; text-transform: uppercase; letter-spacing: 0.5px; }
+    .wk-chip.host { border-color: #FFD700; background: rgba(255,215,0,0.1); }
+    .wk-chip.group { background: rgba(255,107,107,0.1); border-color: rgba(255,107,107,0.3); }
+    .wk-chip.r16 { background: rgba(255,165,0,0.1); border-color: rgba(255,165,0,0.3); }
+    .wk-chip.qf { background: rgba(80,200,120,0.1); border-color: rgba(80,200,120,0.3); }
+    .wk-chip.sf { background: rgba(77,166,255,0.1); border-color: rgba(77,166,255,0.3); }
+    .wk-chip.final { background: rgba(255,215,0,0.15); border-color: #FFD700; }
+
+    /* Overall record bar */
+    .record-bar {
+      display: flex; height: 28px; border-radius: 8px; overflow: hidden; margin: 10px 0;
+      font-size: 0.68rem; font-weight: 800;
+    }
+    .record-bar div {
+      display: flex; align-items: center; justify-content: center; color: #fff;
+      min-width: 30px;
+    }
+    .record-bar .wins { background: #50c878; }
+    .record-bar .draws { background: #e67e22; }
+    .record-bar .losses { background: #ff6b6b; }
+
+    /* Meter/gauge */
+    .chance-meter {
+      background: rgba(255,255,255,0.06); border-radius: 10px; height: 22px;
+      overflow: hidden; margin: 6px 0 4px;
+    }
+    .chance-meter-fill {
+      height: 100%; border-radius: 10px; display: flex; align-items: center;
+      padding-left: 10px; font-size: 0.7rem; font-weight: 800; color: #fff;
+      transition: width 0.6s ease;
+    }
+    .chance-label {
+      display: flex; justify-content: space-between; font-size: 0.72rem; opacity: 0.6;
+      margin-bottom: 2px;
+    }
+
+    /* H2H cards */
+    .h2h-card {
+      display: flex; align-items: center; gap: 14px; padding: 12px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+    .h2h-card:last-child { border-bottom: none; }
+    .h2h-flag { width: 40px; height: 27px; border-radius: 4px; object-fit: cover; }
+    .h2h-info { flex: 1; }
+    .h2h-name { font-weight: 700; font-size: 0.9rem; }
+    .h2h-detail { font-size: 0.75rem; opacity: 0.6; margin-top: 2px; }
+    .h2h-result { font-weight: 800; font-size: 0.85rem; padding: 4px 12px; border-radius: 8px; }
+    .h2h-result.fav { background: rgba(80,200,120,0.15); color: #50c878; }
+    .h2h-result.even { background: rgba(255,165,0,0.15); color: #e67e22; }
+    .h2h-result.unfav { background: rgba(255,107,107,0.15); color: #ff6b6b; }
+
     /* ── Not found ── */
     .not-found {
       text-align: center; padding: 80px 20px;
@@ -177,6 +280,10 @@
       .hero-info h2 { font-size: 1.5rem; }
       .info-grid { grid-template-columns: repeat(2, 1fr); }
       .player-club { display: none; }
+      .analysis-block div[style*="grid-template-columns:1fr 1fr"] { grid-template-columns: 1fr !important; }
+      .stats-table { font-size: 0.7rem; }
+      .stats-table th, .stats-table td { padding: 5px 6px; }
+      .h2h-card { flex-wrap: wrap; }
     }
   </style>
 </head>
@@ -219,6 +326,8 @@
 <script src="data/careers_group12.js"></script>
 <script src="data/careers_group13.js"></script>
 <script src="data/careers_group14.js"></script>
+<script src="data/team_analysis.js"></script>
+<script src="data/matches.js"></script>
 <script>
 (function() {
   var params = new URLSearchParams(window.location.search);
@@ -321,6 +430,232 @@
   }
 
   html += '</div>';
+
+  // ═══════ ANALYSE SECTIE ═══════
+  var analysis = (typeof teamAnalysisData !== 'undefined') ? teamAnalysisData[teamId] : null;
+  if (analysis) {
+    html += '<div class="analysis-section">';
+    html += '<div class="analysis-header"><span>📊</span> Uitgebreide Analyse</div>';
+
+    // ── 1. Algeheel WK-overzicht ──
+    if (analysis.overall) {
+      var o = analysis.overall;
+      var total = o.wins + o.draws + o.losses;
+      var wPct = Math.round(o.wins / total * 100);
+      var dPct = Math.round(o.draws / total * 100);
+      var lPct = 100 - wPct - dPct;
+      html += '<div class="analysis-block">';
+      html += '<h3>⚽ WK Totaaloverzicht</h3>';
+      html += '<div class="record-bar">';
+      html += '<div class="wins" style="width:' + wPct + '%">' + o.wins + 'W</div>';
+      html += '<div class="draws" style="width:' + dPct + '%">' + o.draws + 'G</div>';
+      html += '<div class="losses" style="width:' + lPct + '%">' + o.losses + 'V</div>';
+      html += '</div>';
+      html += '<table class="stats-table"><tr>';
+      html += '<th>Wedstrijden</th><th>Winst</th><th>Gelijk</th><th>Verlies</th><th>Goals voor</th><th>Goals tegen</th><th>Win%</th>';
+      html += '</tr><tr>';
+      html += '<td><strong>' + o.matches + '</strong></td>';
+      html += '<td class="highlight">' + o.wins + '</td>';
+      html += '<td class="neutral">' + o.draws + '</td>';
+      html += '<td class="warning">' + o.losses + '</td>';
+      html += '<td>' + o.goalsFor + '</td>';
+      html += '<td>' + o.goalsAgainst + '</td>';
+      html += '<td>' + wPct + '%</td>';
+      html += '</tr></table>';
+      html += '</div>';
+    }
+
+    // ── 2. WK-geschiedenis timeline ──
+    if (analysis.history && analysis.history.length > 0) {
+      html += '<div class="analysis-block">';
+      html += '<h3>🏆 WK-geschiedenis</h3>';
+      html += '<div class="wk-timeline">';
+      analysis.history.forEach(function(h) {
+        var cls = h.tag || 'group';
+        var isHost = h.host && h.host.indexOf('🏠') > -1;
+        html += '<div class="wk-chip ' + cls + (isHost ? ' host' : '') + '" title="' + h.detail + '">';
+        html += '<span class="wk-year">' + h.year + '</span>';
+        html += '<span class="wk-result">' + h.result + '</span>';
+        html += '</div>';
+      });
+      html += '</div>';
+      // Legend
+      html += '<div style="margin-top:10px;font-size:0.7rem;opacity:0.5;display:flex;gap:14px;flex-wrap:wrap">';
+      html += '<span>🟢 Kwartfinale</span><span>🟠 Achtste finale</span><span>🔴 Groepsfase</span><span>⭐ Gastland</span>';
+      html += '</div>';
+      html += '</div>';
+    }
+
+    // ── 3. El Quinto Partido ──
+    if (analysis.quintoPartido) {
+      var qp = analysis.quintoPartido;
+      html += '<div class="analysis-block">';
+      html += '<h3>😱 El Quinto Partido – De Vloek</h3>';
+      html += '<p>' + qp.intro + '</p>';
+      html += '<table class="stats-table"><tr><th>Jaar</th><th>Tegenstander</th><th>Score</th><th>Wat gebeurde er?</th></tr>';
+      qp.matches.forEach(function(m) {
+        html += '<tr><td>' + m.year + '</td><td>' + m.opponent + '</td><td class="warning">' + m.score + '</td><td>' + m.detail + '</td></tr>';
+      });
+      html += '</table>';
+      html += '<p style="margin-top:12px">' + qp.conclusion + '</p>';
+      html += '</div>';
+    }
+
+    // ── 4. Thuisvoordeel ──
+    if (analysis.hostRecord) {
+      var hr = analysis.hostRecord;
+      html += '<div class="analysis-block">';
+      html += '<h3>🏟️ Thuisvoordeel als Gastland</h3>';
+      html += '<p>' + hr.intro + '</p>';
+      if (hr.tournaments) {
+        html += '<table class="stats-table"><tr><th>WK</th><th>W</th><th>G</th><th>V</th><th>Resultaat</th></tr>';
+        hr.tournaments.forEach(function(t) {
+          html += '<tr><td><strong>' + t.year + '</strong></td>';
+          html += '<td class="highlight">' + t.wins + '</td>';
+          html += '<td class="neutral">' + t.draws + '</td>';
+          html += '<td class="warning">' + t.losses + '</td>';
+          html += '<td>' + t.detail + '</td></tr>';
+        });
+        html += '</table>';
+      }
+      html += '<p style="margin-top:10px">' + hr.conclusion + '</p>';
+      html += '</div>';
+    }
+
+    // ── 5. Head-to-Head Groep ──
+    if (analysis.groupOpponents && analysis.groupOpponents.length > 0) {
+      html += '<div class="analysis-block">';
+      html += '<h3>🆚 Head-to-Head – Groep ' + team.group + '</h3>';
+      analysis.groupOpponents.forEach(function(opp) {
+        var flagUrl = 'https://flagcdn.com/w80/' + opp.code + '.png';
+        var verdictClass = opp.verdict === 'fav' ? 'fav' : (opp.verdict === 'unfav' ? 'unfav' : 'even');
+        var verdictText = opp.verdict === 'fav' ? 'Favoriet' : (opp.verdict === 'unfav' ? 'Underdog' : 'Gelijkwaardig');
+        html += '<div class="h2h-card">';
+        html += '<img class="h2h-flag" src="' + flagUrl + '" alt="' + opp.name + '">';
+        html += '<div class="h2h-info">';
+        html += '<div class="h2h-name">' + opp.name + ' <span style="opacity:0.4;font-size:0.7rem">(FIFA #' + opp.fifaRanking + ')</span></div>';
+        html += '<div class="h2h-detail">' + opp.h2hSummary + '</div>';
+        html += '</div>';
+        html += '<span class="h2h-result ' + verdictClass + '">' + verdictText + '</span>';
+        html += '</div>';
+        // WK matches detail
+        if (opp.matches && opp.matches.length > 0) {
+          opp.matches.forEach(function(m) {
+            html += '<div style="padding:6px 0 6px 54px;font-size:0.78rem;opacity:0.7">';
+            html += '<strong>' + m.tournament + ':</strong> ' + m.score + ' – ' + m.detail;
+            html += '</div>';
+          });
+        }
+        html += '<div style="padding:4px 0 10px 54px;font-size:0.8rem;opacity:0.85">' + opp.analysis + '</div>';
+      });
+      html += '</div>';
+    }
+
+    // ── 6. Sleutelspelers ──
+    if (analysis.keyPlayers && analysis.keyPlayers.length > 0) {
+      html += '<div class="analysis-block">';
+      html += '<h3>⭐ Sleutelspelers</h3>';
+      analysis.keyPlayers.forEach(function(kp) {
+        var photoUrl = (typeof playerPhotos !== 'undefined' && playerPhotos[kp.name]) ? playerPhotos[kp.name] : '';
+        html += '<div style="display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.06)">';
+        if (photoUrl) {
+          html += '<img src="' + photoUrl + '" style="width:40px;height:40px;border-radius:50%;object-fit:cover" onerror="this.style.display=\'none\'">';
+        } else {
+          html += '<div style="width:40px;height:40px;border-radius:50%;background:#1a2a44;display:flex;align-items:center;justify-content:center;font-size:1.1rem">⚽</div>';
+        }
+        html += '<div style="flex:1">';
+        html += '<div style="font-weight:700;font-size:0.88rem">' + kp.name + ' <span style="font-size:0.7rem;opacity:0.5;font-weight:600">' + kp.role + '</span></div>';
+        html += '<div style="font-size:0.78rem;opacity:0.7;margin-top:2px">' + kp.detail + '</div>';
+        html += '</div></div>';
+      });
+      html += '</div>';
+    }
+
+    // ── 7. Sterke en zwakke punten ──
+    if (analysis.strengths || analysis.weaknesses) {
+      html += '<div class="analysis-block">';
+      html += '<h3>📋 Sterke & Zwakke Punten</h3>';
+      html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">';
+      if (analysis.strengths) {
+        html += '<div>';
+        html += '<div style="font-weight:700;color:#50c878;font-size:0.82rem;margin-bottom:8px">✅ Sterktes</div>';
+        analysis.strengths.forEach(function(s) {
+          html += '<div style="font-size:0.8rem;padding:4px 0;opacity:0.85;border-bottom:1px solid rgba(255,255,255,0.04)">• ' + s + '</div>';
+        });
+        html += '</div>';
+      }
+      if (analysis.weaknesses) {
+        html += '<div>';
+        html += '<div style="font-weight:700;color:#ff6b6b;font-size:0.82rem;margin-bottom:8px">⚠️ Zwaktes</div>';
+        analysis.weaknesses.forEach(function(w) {
+          html += '<div style="font-size:0.8rem;padding:4px 0;opacity:0.85;border-bottom:1px solid rgba(255,255,255,0.04)">• ' + w + '</div>';
+        });
+        html += '</div>';
+      }
+      html += '</div></div>';
+    }
+
+    // ── 8. Kansen & Voorspelling ──
+    if (analysis.prediction) {
+      var pred = analysis.prediction;
+      html += '<div class="analysis-block">';
+      html += '<h3>🔮 Kansen & Voorspelling</h3>';
+      var stages = [
+        { label: 'Groepsfase overleven', pct: pred.groupStage, color: '#50c878' },
+        { label: 'Ronde van 32 winnen', pct: pred.roundOf32, color: '#4da6ff' },
+        { label: 'Kwartfinale bereiken', pct: pred.roundOf16, color: '#e67e22' },
+        { label: 'Halve finale bereiken', pct: pred.quarterFinal, color: '#ff6b6b' },
+        { label: 'Finale bereiken', pct: pred.semiFinal, color: '#c678dd' },
+        { label: 'Wereldkampioen', pct: pred.champion, color: '#FFD700' }
+      ];
+      stages.forEach(function(s) {
+        html += '<div class="chance-label"><span>' + s.label + '</span><span>' + s.pct + '%</span></div>';
+        html += '<div class="chance-meter"><div class="chance-meter-fill" style="width:' + s.pct + '%;background:' + s.color + '">' + (s.pct >= 10 ? s.pct + '%' : '') + '</div></div>';
+      });
+      html += '<div style="margin-top:16px;padding:14px;background:rgba(255,215,0,0.06);border-radius:10px;border-left:3px solid #FFD700">';
+      html += '<div style="font-weight:800;font-size:0.82rem;color:#FFD700;margin-bottom:6px">Meest waarschijnlijk: ' + pred.mostLikelyResult + '</div>';
+      html += '<div style="font-size:0.84rem;line-height:1.65;opacity:0.85">' + pred.summary + '</div>';
+      html += '</div>';
+      html += '</div>';
+    }
+
+    // ── 9. Aankomende wedstrijden ──
+    if (typeof matchesData !== 'undefined') {
+      var teamMatches = matchesData.matches.filter(function(m) {
+        return m.home === teamId || m.away === teamId;
+      });
+      if (teamMatches.length > 0) {
+        html += '<div class="analysis-block">';
+        html += '<h3>📅 Groepswedstrijden WK 2026</h3>';
+        teamMatches.forEach(function(m) {
+          var homeTeam = teamsData.teams.find(function(t) { return t.id === m.home; });
+          var awayTeam = teamsData.teams.find(function(t) { return t.id === m.away; });
+          var venue = matchesData.venues[m.venue];
+          var homeFlag = 'https://flagcdn.com/w40/' + homeTeam.code + '.png';
+          var awayFlag = 'https://flagcdn.com/w40/' + awayTeam.code + '.png';
+          var dateStr = m.date.split('-');
+          var months = ['','jan','feb','mrt','apr','mei','jun','jul','aug','sep','okt','nov','dec'];
+          var dateFmt = parseInt(dateStr[2]) + ' ' + months[parseInt(dateStr[1])] + ' ' + dateStr[0];
+          html += '<div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.06)">';
+          html += '<div style="min-width:80px;font-size:0.78rem;opacity:0.6">' + dateFmt + '</div>';
+          html += '<img src="' + homeFlag + '" style="width:28px;height:19px;border-radius:2px;object-fit:cover">';
+          html += '<div style="flex:1;font-weight:700;font-size:0.88rem">' + homeTeam.name + ' vs ' + awayTeam.name + '</div>';
+          html += '<div style="text-align:right;font-size:0.78rem">';
+          if (m.timeNL) {
+            html += '<span style="color:#e67e22;font-weight:800">🇳🇱 ' + m.timeNL + '</span>';
+          }
+          if (venue) {
+            html += '<div style="opacity:0.5;font-size:0.7rem">' + venue.name + ', ' + venue.city + '</div>';
+          }
+          html += '</div></div>';
+        });
+        html += '</div>';
+      }
+    }
+
+    html += '</div>'; // end analysis-section
+  }
+
   contentEl.innerHTML = html;
 })();
 </script>
