@@ -100,6 +100,42 @@
     .match-time-label { font-size: 0.55rem; font-weight: 500; color: #bbb; display: block; margin-top: 2px; }
     .match-time-nl { font-size: 0.7rem; font-weight: 800; color: #e67e22; display: block; margin-top: 2px; }
 
+    /* ── Voorspelling ── */
+    .prediction-bar {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 7px 14px; background: linear-gradient(90deg, rgba(138,43,226,0.08), rgba(255,215,0,0.08));
+      border-top: 1px dashed rgba(138,43,226,0.25); font-size: 0.72rem; gap: 8px;
+    }
+    .prediction-label {
+      display: flex; align-items: center; gap: 4px;
+      font-weight: 700; color: #8b5cf6; white-space: nowrap; font-size: 0.65rem;
+      text-transform: uppercase; letter-spacing: 0.8px;
+    }
+    .prediction-score {
+      font-size: 1.05rem; font-weight: 900; color: #6d28d9;
+      background: rgba(138,43,226,0.1); padding: 2px 12px; border-radius: 8px;
+      letter-spacing: 2px;
+    }
+    .prediction-chances {
+      display: flex; gap: 6px; align-items: center;
+    }
+    .chance-pill {
+      padding: 2px 7px; border-radius: 6px; font-size: 0.62rem; font-weight: 700;
+    }
+    .chance-home { background: rgba(34,197,94,0.15); color: #16a34a; }
+    .chance-draw { background: rgba(234,179,8,0.15); color: #ca8a04; }
+    .chance-away { background: rgba(239,68,68,0.15); color: #dc2626; }
+    .prediction-reasoning {
+      padding: 4px 14px 7px; font-size: 0.68rem; color: #888;
+      background: rgba(138,43,226,0.03); font-style: italic; line-height: 1.4;
+    }
+    .prediction-confidence {
+      font-size: 0.58rem; font-weight: 700; padding: 1px 6px; border-radius: 4px;
+      text-transform: uppercase; letter-spacing: 0.5px;
+    }
+    .confidence-hoog { background: rgba(34,197,94,0.15); color: #16a34a; }
+    .confidence-gemiddeld { background: rgba(234,179,8,0.15); color: #ca8a04; }
+
     .match-bottom {
       display: flex; align-items: center; justify-content: center;
       padding: 5px 14px; background: #f8f9fb; font-size: 0.7rem; color: #999;
@@ -182,6 +218,8 @@
 
 <script src="data/teams.js"></script>
 <script src="data/matches.js"></script>
+<script src="data/team_analysis.js"></script>
+<script src="data/predictions.js"></script>
 <script>
   var scheduleEl = document.getElementById('schedule');
   var countEl    = document.getElementById('match-count');
@@ -204,6 +242,9 @@
   }
 
   function buildSchedule() {
+    // Voorspellingen genereren
+    var predictions = predictionsEngine.predictAllMatches();
+
     // Group matches by date
     var byDate = {};
     matchesData.matches.forEach(function(m) {
@@ -224,6 +265,7 @@
         var home = teamMap[match.home];
         var away = teamMap[match.away];
         var venue = matchesData.venues[match.venue];
+        var pred = predictions[match.id];
 
         var card = document.createElement('div');
         card.className = 'match-card';
@@ -237,6 +279,23 @@
 
         // Nederlandse tijd uit officieel schema (bron: FIFA/BetCity)
         var timeNL = match.timeNL || '';
+
+        // Voorspelling HTML
+        var predictionHtml = '';
+        if (pred) {
+          predictionHtml =
+            '<div class="prediction-bar">' +
+              '<span class="prediction-label">🔮 Voorspelling</span>' +
+              '<span class="prediction-score">' + pred.homeGoals + ' – ' + pred.awayGoals + '</span>' +
+              '<div class="prediction-chances">' +
+                '<span class="chance-pill chance-home" title="Winstkans ' + home.name + '">' + home.code.toUpperCase() + ' ' + pred.homeWinPct + '%</span>' +
+                '<span class="chance-pill chance-draw">=' + pred.drawPct + '%</span>' +
+                '<span class="chance-pill chance-away" title="Winstkans ' + away.name + '">' + away.code.toUpperCase() + ' ' + pred.awayWinPct + '%</span>' +
+              '</div>' +
+              '<span class="prediction-confidence confidence-' + pred.confidence + '">' + pred.confidence + '</span>' +
+            '</div>' +
+            '<div class="prediction-reasoning">💡 ' + pred.reasoning + '</div>';
+        }
 
         card.innerHTML =
           '<div class="match-top">' +
@@ -266,7 +325,8 @@
             '<div class="match-bottom">' +
               '<img class="venue-flag" src="' + venueFlag + '" alt="">' +
               '<span>' + venue.name + ', ' + venue.city + '</span>' +
-            '</div>' : '');
+            '</div>' : '') +
+          predictionHtml;
 
         scheduleEl.appendChild(card);
       });
