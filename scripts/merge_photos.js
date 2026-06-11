@@ -1,0 +1,14 @@
+const fs = require('fs');
+const path = require('path');
+const photosCode = fs.readFileSync(path.join(__dirname, '..', 'data', 'playerimages.js'), 'utf8');
+const fn = new Function(photosCode + '\nreturn playerPhotos;');
+const playerPhotos = fn();
+const foundPhotos = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'data', 'found_photos.json'), 'utf8'));
+let added = 0;
+Object.entries(foundPhotos).forEach(([name, url]) => { if (!playerPhotos[name]) { playerPhotos[name] = url; added++; } });
+const sorted = Object.keys(playerPhotos).sort((a, b) => a.localeCompare(b, 'en'));
+let output = 'const playerPhotos = {\n';
+sorted.forEach((name, i) => { output += `  ${JSON.stringify(name)}: ${JSON.stringify(playerPhotos[name])}${i < sorted.length - 1 ? ',' : ''}\n`; });
+output += '};\n';
+fs.writeFileSync(path.join(__dirname, '..', 'data', 'playerimages.js'), output, 'utf8');
+console.log(`Merged ${added} new photos. Total: ${sorted.length} entries.`);
