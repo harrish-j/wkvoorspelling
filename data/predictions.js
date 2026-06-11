@@ -142,15 +142,33 @@ const predictionsEngine = (function () {
   function wcRecentForm(overall) {
     if (!overall || overall.matches === 0) return -35;
     if (overall.matches < 5) return -15;
-    // Recent form: win ratio weighted
     var winRate = overall.wins / overall.matches;
-    var formBonus = (winRate - 0.33) * 80; // 0.33 = average, so 0 bonus at average
-    // Experience base
+    var formBonus = (winRate - 0.33) * 80;
     var expBase = 0;
     if (overall.matches > 50) expBase = 20;
     else if (overall.matches > 30) expBase = 12;
     else if (overall.matches > 15) expBase = 5;
     return Math.max(-35, Math.min(35, expBase + formBonus));
+  }
+
+  // WK-pedigree: hoe ver kwam een team in recente WK's?
+  // Recenter = zwaarder gewogen. Tag-scores: group=0, r16=2, qf=5, sf=10, final=18, winner=25
+  var PEDIGREE_TAG_SCORES = { group: 0, r16: 2, qf: 5, sf: 10, final: 18, winner: 25 };
+  var PEDIGREE_RECENCY = { 2022: 1.0, 2018: 0.7, 2014: 0.4 };
+
+  function wcPedigreeBonus(history) {
+    if (!history || history.length === 0) return -10;
+    var totalScore = 0;
+    var counted = 0;
+    for (var i = 0; i < history.length; i++) {
+      var entry = history[i];
+      var recency = PEDIGREE_RECENCY[entry.year] || 0.15;
+      var tagScore = PEDIGREE_TAG_SCORES[entry.tag] || 0;
+      totalScore += tagScore * recency;
+      if (entry.year >= 2014) counted++;
+    }
+    if (counted === 0) return -5;
+    return Math.max(-10, Math.min(35, totalScore));
   }
 
   // H2H bonus from groupOpponents data
@@ -220,6 +238,10 @@ const predictionsEngine = (function () {
     homeElo += wcRecentForm(homeAnalysis.overall);
     awayElo += wcRecentForm(awayAnalysis.overall);
 
+    // 3b. WK-pedigree: hoe ver kwam team in recente WK's (max ±35 Elo)
+    homeElo += wcPedigreeBonus(homeAnalysis.history);
+    awayElo += wcPedigreeBonus(awayAnalysis.history);
+
     // 4. Confederatiesterkte (max ±18 Elo)
     homeElo += confederationBonus(homeId);
     awayElo += confederationBonus(awayId);
@@ -246,13 +268,25 @@ const predictionsEngine = (function () {
     var TOTAL_GOALS = 2.72;
 
     // Elo-verschil naar verwachte score (logistische functie, c=800)
-    var eloDiff = homeElo - awayElo;
+    // Neutralisatie: WK-underdogs spelen defensiever → kwaliteitsverschil afvlakken
+    var eloDiff = (homeElo - awayElo) * 0.88;
     var homeExpected = 1.0 / (1.0 + Math.pow(10, -eloDiff / 800));
     homeExpected = Math.max(0.12, Math.min(0.88, homeExpected));
 
     // λ berekenen
     var homeXG = TOTAL_GOALS * homeExpected;
     var awayXG = TOTAL_GOALS * (1 - homeExpected);
+
+    // Offensief/defensief profiel: aanvallende teams scoren meer, verdedigende minder
+    function attackProfile(overall) {
+      if (!overall || !overall.goalsFor || overall.matches === 0) return 1.0;
+      var gfPerMatch = overall.goalsFor / overall.matches;
+      var gaPerMatch = overall.goalsAgainst / overall.matches;
+      var ratio = gfPerMatch / (gfPerMatch + gaPerMatch + 0.01);
+      return 0.85 + 0.3 * ratio; // range ~0.85 (defensief) tot ~1.15 (aanvallend)
+    }
+    homeXG *= attackProfile(homeAnalysis.overall);
+    awayXG *= attackProfile(awayAnalysis.overall);
 
     // Gastlandbonus: +0.35 goals
     if (homeIsHost) homeXG += 0.35;
@@ -266,6 +300,12 @@ const predictionsEngine = (function () {
     // Minimum λ
     homeXG = Math.max(0.35, homeXG);
     awayXG = Math.max(0.35, awayXG);
+
+    // Regressie naar gemiddelde: trek extreme xG richting toernooigemiddelde
+    var MEAN_XG = TOTAL_GOALS / 2;
+    var REGRESSION = 0.10;
+    homeXG = homeXG * (1 - REGRESSION) + MEAN_XG * REGRESSION;
+    awayXG = awayXG * (1 - REGRESSION) + MEAN_XG * REGRESSION;
 
     // 10. Poisson-verdeling met dynamische ρ
     function poissonProb(lambda, k) {
@@ -288,7 +328,11 @@ const predictionsEngine = (function () {
 
     // Score-matrix berekenen (0-5 × 0-5) met draw-inflatie op scoreniveau
     var maxGoals = 6;
-    var DRAW_INFLATION = 1.25;
+    // Speeldag-dynamiek: MD1 iets minder draws (zenuwen/open spel), MD3 meer draws (tactisch)
+    var matchdayFactor = 1.0;
+    if (match.matchday === 1) matchdayFactor = 0.95;
+    else if (match.matchday === 3) matchdayFactor = 1.08;
+    var DRAW_INFLATION = 1.12 * matchdayFactor;
     var scoreProbs = [];
     var homeWinProb = 0, drawProb = 0, awayWinProb = 0;
 
