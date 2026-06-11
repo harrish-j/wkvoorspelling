@@ -1,6 +1,16 @@
 // ============================================================
-// WK 2026 Wedstrijdvoorspellingen – v2 (Dixon-Coles-geïnspireerd)
+// WK 2026 Wedstrijdvoorspellingen – v3 (Dixon-Coles+)
 // ============================================================
+// Nieuw in v3:
+//   - Exponentiële rankingToElo (meer spreiding top, afvlakking onderkant)
+//   - Logaritmische ploegwaardebonus (diminishing returns)
+//   - Confederatiesterktefactor (UEFA/CONMEBOL historisch sterk)
+//   - WK recente vorm (winratio-gewogen) vervangt stap-ervaring
+//   - H2H-bonus uit groupOpponents data
+//   - Altitude/venue xG-correctie (Mexico-stadions)
+//   - Dynamische ρ (sterkere correctie bij lage scores)
+//   - Gelijkspel-inflatie (Poisson onderschat WK-remises)
+//   - Volledige CDF-scorekeuze i.p.v. top-5
 // Bronnen:
 //   - FIFA World Rankings april 2026 (via amirdaraee/world-cup-predictions)
 //   - Dixon-Coles Poisson goal model (1997) principes
@@ -96,27 +106,89 @@ const predictionsEngine = (function () {
     return team ? team.name : 'Team ' + teamId;
   }
 
-  // Elo-achtige sterkte op basis van FIFA-ranking
-  // Ranking 1 → ~1995, Ranking 85 → ~1080
+  // Elo-achtige sterkte op basis van FIFA-ranking (exponentieel)
+  // Ranking 1 → ~1776, Ranking 10 → ~1601, Ranking 50 → ~1281, Ranking 85 → ~1233
   function rankingToElo(ranking) {
-    return 1500 + (100 - ranking) * 5.5;
+    // Exponential: more spread at top, diminishing at bottom
+    return 1200 + 600 * Math.exp(-ranking / 25);
   }
 
-  // Ploegwaarde naar Elo-bonus (max ±60)
+  // Ploegwaarde naar Elo-bonus (logaritmisch, diminishing returns)
   function squadValueBonus(teamId) {
     var val = SQUAD_VALUES[teamId] || 50;
-    var z = (val - 300) / 400;
-    return Math.max(-60, Math.min(60, z * 60));
+    // Logarithmic: diminishing returns for very expensive squads
+    var bonus = 45 * (Math.log(val / 100) / Math.log(15));
+    return Math.max(-50, Math.min(50, bonus));
   }
 
-  // WK-ervaring factor → Elo bonus
-  function wcExperienceBonus(overall) {
-    if (!overall || overall.matches === 0) return -40; // WK-debutant penalty
-    if (overall.matches < 5) return -20;
-    if (overall.matches > 50) return 30;
-    if (overall.matches > 30) return 20;
-    if (overall.matches > 15) return 10;
+  // Confederation strength based on historical WC performance
+  var CONFEDERATION_STRENGTH = {
+    'UEFA': 12,
+    'CONMEBOL': 8,
+    'CAF': -3,
+    'CONCACAF': -5,
+    'AFC': -10,
+    'OFC': -18
+  };
+
+  function confederationBonus(teamId) {
+    if (typeof teamsData === 'undefined') return 0;
+    var team = teamsData.teams.find(function(t) { return t.id === teamId; });
+    if (!team || !team.confederation) return 0;
+    return CONFEDERATION_STRENGTH[team.confederation] || 0;
+  }
+
+  // WK recente vorm: combineert ervaring met winratio
+  function wcRecentForm(overall) {
+    if (!overall || overall.matches === 0) return -35;
+    if (overall.matches < 5) return -15;
+    // Recent form: win ratio weighted
+    var winRate = overall.wins / overall.matches;
+    var formBonus = (winRate - 0.33) * 80; // 0.33 = average, so 0 bonus at average
+    // Experience base
+    var expBase = 0;
+    if (overall.matches > 50) expBase = 20;
+    else if (overall.matches > 30) expBase = 12;
+    else if (overall.matches > 15) expBase = 5;
+    return Math.max(-35, Math.min(35, expBase + formBonus));
+  }
+
+  // H2H bonus from groupOpponents data
+  function h2hBonus(homeId, awayId, analysis) {
+    var homeData = analysis[homeId] || {};
+    var awayCode = getTeamCode(awayId);
+    if (!homeData.groupOpponents || !awayCode) return 0;
+    for (var i = 0; i < homeData.groupOpponents.length; i++) {
+      var opp = homeData.groupOpponents[i];
+      if (opp.code === awayCode && opp.h2h) {
+        var wins = opp.h2h.wins || 0;
+        var total = (opp.h2h.wins || 0) + (opp.h2h.draws || 0) + (opp.h2h.losses || 0);
+        if (total === 0) return 0;
+        var winRate = wins / total;
+        return Math.round((winRate - 0.5) * 30); // max ±15
+      }
+    }
     return 0;
+  }
+
+  // Altitude xG bonus for teams acclimatized to altitude (Mexico hosts)
+  var VENUE_ALTITUDE = {
+    'azteca': 2240,
+    'bbva': 540,
+    'akron': 1560
+  };
+
+  function altitudeXGBonus(match) {
+    var altitude = VENUE_ALTITUDE[match.venue] || 0;
+    if (altitude < 500) return { home: 0, away: 0 };
+    // Non-acclimatized teams lose ~0.1 xG per 1000m
+    var penalty = altitude / 10000;
+    var homeAcclimatized = isHost(match.home);
+    var awayAcclimatized = isHost(match.away);
+    return {
+      home: homeAcclimatized ? penalty * 0.5 : -penalty,
+      away: awayAcclimatized ? penalty * 0.5 : -penalty
+    };
   }
 
   // Deterministische pseudo-random op basis van seed (0-1)
@@ -134,21 +206,25 @@ const predictionsEngine = (function () {
     var homeAnalysis = analysis[homeId] || {};
     var awayAnalysis = analysis[awayId] || {};
 
-    // 1. Basis-sterkte via FIFA-ranking (Elo-schaal)
+    // 1. Basis-sterkte via FIFA-ranking (exponentiële Elo-schaal)
     var homeRanking = FIFA_RANKINGS[homeId] || 50;
     var awayRanking = FIFA_RANKINGS[awayId] || 50;
     var homeElo = rankingToElo(homeRanking);
     var awayElo = rankingToElo(awayRanking);
 
-    // 2. Ploegwaarde-correctie (max ±60 Elo)
+    // 2. Ploegwaarde-correctie (logaritmisch, max ±50 Elo)
     homeElo += squadValueBonus(homeId);
     awayElo += squadValueBonus(awayId);
 
-    // 3. WK-ervaring (max ±40 Elo)
-    homeElo += wcExperienceBonus(homeAnalysis.overall);
-    awayElo += wcExperienceBonus(awayAnalysis.overall);
+    // 3. WK-ervaring + recente vorm (max ±35 Elo)
+    homeElo += wcRecentForm(homeAnalysis.overall);
+    awayElo += wcRecentForm(awayAnalysis.overall);
 
-    // 4. Toernooi-voorspelling bonus (kleine boost, max ±25 Elo)
+    // 4. Confederatiesterkte (max ±18 Elo)
+    homeElo += confederationBonus(homeId);
+    awayElo += confederationBonus(awayId);
+
+    // 5. Toernooi-voorspelling bonus (kleine boost, max ±25 Elo)
     var homePred = homeAnalysis.prediction || {};
     var awayPred = awayAnalysis.prediction || {};
     var homeChampPct = homePred.champion || 0.1;
@@ -156,21 +232,25 @@ const predictionsEngine = (function () {
     homeElo += Math.min(25, Math.log(1 + homeChampPct) * 30);
     awayElo += Math.min(25, Math.log(1 + awayChampPct) * 30);
 
-    // 5. Gastlandvoordeel: +0.35 expected goals (bron: Dixon-Coles fitted 0.277 log → ~0.35 goals)
+    // 6. H2H-bonus (max ±15 Elo)
+    var homeH2H = h2hBonus(homeId, awayId, analysis);
+    var awayH2H = h2hBonus(awayId, homeId, analysis);
+    homeElo += homeH2H;
+    awayElo += awayH2H;
+
+    // 7. Gastlandvoordeel
     var homeIsHost = isHost(homeId);
     var awayIsHost = isHost(awayId);
 
-    // 6. Verwachte doelpunten berekenen (Poisson λ)
-    // Gemiddeld WK-wedstrijd: 2.67 goals (2014-2022 gemiddelde)
-    var TOTAL_GOALS = 2.67;
+    // 8. Verwachte doelpunten berekenen (Poisson λ)
+    var TOTAL_GOALS = 2.72;
 
-    // Elo-verschil naar verwachte score (logistische functie, c=800 voor bredere spreiding)
+    // Elo-verschil naar verwachte score (logistische functie, c=800)
     var eloDiff = homeElo - awayElo;
     var homeExpected = 1.0 / (1.0 + Math.pow(10, -eloDiff / 800));
-    // Cap: zelfs de grootste favoriet wint niet met >85% zekerheid
     homeExpected = Math.max(0.12, Math.min(0.88, homeExpected));
 
-    // λ berekenen: verdeel totale verwachte goals op basis van sterkteverhouding
+    // λ berekenen
     var homeXG = TOTAL_GOALS * homeExpected;
     var awayXG = TOTAL_GOALS * (1 - homeExpected);
 
@@ -178,20 +258,26 @@ const predictionsEngine = (function () {
     if (homeIsHost) homeXG += 0.35;
     if (awayIsHost) awayXG += 0.35;
 
-    // Minimum λ: zelfs zwakste teams scoren soms op een WK
+    // 9. Altitude xG-correctie
+    var altBonus = altitudeXGBonus(match);
+    homeXG += altBonus.home;
+    awayXG += altBonus.away;
+
+    // Minimum λ
     homeXG = Math.max(0.35, homeXG);
     awayXG = Math.max(0.35, awayXG);
 
-    // 7. Poisson-verdeling: kans op elke score berekenen
-    // P(k goals) = e^(-λ) × λ^k / k!
+    // 10. Poisson-verdeling met dynamische ρ
     function poissonProb(lambda, k) {
       var fact = 1;
       for (var i = 2; i <= k; i++) fact *= i;
       return Math.exp(-lambda) * Math.pow(lambda, k) / fact;
     }
 
-    // Dixon-Coles correctie (ρ = -0.05): corrigeert lage scores
-    var RHO = -0.05;
+    // Dynamic rho: stronger correction for low-scoring matches
+    var avgLambda = (homeXG + awayXG) / 2;
+    var RHO = -0.02 - 0.04 / (1 + avgLambda);
+
     function dixonColesAdj(homeG, awayG, homeL, awayL) {
       if (homeG === 0 && awayG === 0) return 1 - homeL * awayL * RHO;
       if (homeG === 1 && awayG === 0) return 1 + awayL * RHO;
@@ -200,8 +286,9 @@ const predictionsEngine = (function () {
       return 1;
     }
 
-    // Score-matrix berekenen (0-5 × 0-5)
+    // Score-matrix berekenen (0-5 × 0-5) met draw-inflatie op scoreniveau
     var maxGoals = 6;
+    var DRAW_INFLATION = 1.25;
     var scoreProbs = [];
     var homeWinProb = 0, drawProb = 0, awayWinProb = 0;
 
@@ -209,6 +296,8 @@ const predictionsEngine = (function () {
       for (var a = 0; a < maxGoals; a++) {
         var prob = poissonProb(homeXG, h) * poissonProb(awayXG, a);
         prob *= dixonColesAdj(h, a, homeXG, awayXG);
+        // Draw inflation: inflate individual draw scores so they're selected more often
+        if (h === a) prob *= DRAW_INFLATION;
         scoreProbs.push({ home: h, away: a, prob: prob });
         if (h > a) homeWinProb += prob;
         else if (h === a) drawProb += prob;
@@ -222,41 +311,42 @@ const predictionsEngine = (function () {
     drawProb /= totalProb;
     awayWinProb /= totalProb;
 
-    // 8. Score selecteren met realistische variatie
+    // 12. Score selection via CDF met 93% cap (voorkomt extreme tail-events)
     scoreProbs.sort(function(a, b) { return b.prob - a.prob; });
-
-    // Gebruik seeded random om niet altijd de meest waarschijnlijke te pakken
+    var CDF_CAP = 0.93;
+    var capTotal = 0;
+    var cappedCount = 0;
+    for (var ci = 0; ci < scoreProbs.length; ci++) {
+      capTotal += scoreProbs[ci].prob;
+      cappedCount = ci + 1;
+      if (capTotal >= CDF_CAP) break;
+    }
     var seed = match.id * 13 + homeId * 7 + awayId * 3;
-    var roll = seededRandom(seed);
-    var scoreIdx = 0;
-
-    // Kies score op basis van cumulatieve kans van top-5 meest waarschijnlijke
-    if (scoreProbs.length >= 5) {
-      var topTotal = scoreProbs[0].prob + scoreProbs[1].prob + scoreProbs[2].prob +
-                     scoreProbs[3].prob + scoreProbs[4].prob;
-      var cum = 0;
-      for (var si = 0; si < 5; si++) {
-        cum += scoreProbs[si].prob / topTotal;
-        if (roll < cum) { scoreIdx = si; break; }
+    var roll = seededRandom(seed) * capTotal; // scale roll to capped range
+    var cumulative = 0;
+    var selectedScore = scoreProbs[0];
+    for (var si = 0; si < cappedCount; si++) {
+      cumulative += scoreProbs[si].prob;
+      if (roll < cumulative) {
+        selectedScore = scoreProbs[si];
+        break;
       }
     }
-
-    var selectedScore = scoreProbs[scoreIdx];
     var homeGoals = selectedScore.home;
     var awayGoals = selectedScore.away;
 
-    // 9. Winkansen als percentages
+    // 13. Winkansen als percentages
     var homeWinPct = Math.round(homeWinProb * 100);
     var drawPct = Math.round(drawProb * 100);
     var awayWinPct = 100 - homeWinPct - drawPct;
 
-    // 10. Confidence bepalen
+    // 14. Confidence bepalen
     var maxProb = Math.max(homeWinProb, drawProb, awayWinProb);
     var confidence = maxProb > 0.55 ? 'hoog' : maxProb > 0.42 ? 'gemiddeld' : 'laag';
 
-    // 11. Onderbouwing
+    // 15. Onderbouwing
     var reasoning = buildReasoning(homeId, awayId, homeRanking, awayRanking,
-      homeIsHost, awayIsHost, homeXG, awayXG, analysis);
+      homeIsHost, awayIsHost, homeXG, awayXG, analysis, homeH2H, awayH2H);
 
     return {
       matchId: match.id,
@@ -274,7 +364,7 @@ const predictionsEngine = (function () {
     };
   }
 
-  function buildReasoning(homeId, awayId, homeRank, awayRank, homeHost, awayHost, homeXG, awayXG, analysis) {
+  function buildReasoning(homeId, awayId, homeRank, awayRank, homeHost, awayHost, homeXG, awayXG, analysis, homeH2H, awayH2H) {
     var homeName = getTeamName(homeId);
     var awayName = getTeamName(awayId);
     var parts = [];
@@ -289,6 +379,14 @@ const predictionsEngine = (function () {
       parts.push(fav2 + ' is favoriet (FIFA #' + Math.min(homeRank, awayRank) + ' vs #' + Math.max(homeRank, awayRank) + ')');
     } else {
       parts.push('Gelijkwaardig op papier (FIFA #' + homeRank + ' vs #' + awayRank + ')');
+    }
+
+    // Confederatie
+    var homeConfed = confederationBonus(homeId);
+    var awayConfed = confederationBonus(awayId);
+    if (Math.abs(homeConfed - awayConfed) >= 10) {
+      var strongerConfed = homeConfed > awayConfed ? homeName : awayName;
+      parts.push(strongerConfed + ' profiteert van sterkere confederatie');
     }
 
     // Gastland
@@ -313,15 +411,30 @@ const predictionsEngine = (function () {
       parts.push(awayName + ' heeft enorm veel meer WK-ervaring (' + awayOverall.matches + ' wed.)');
     }
 
-    // Head-to-head
-    var homeAnalysisData = analysis[homeId] || {};
-    if (homeAnalysisData.groupOpponents) {
-      var awayCode = getTeamCode(awayId);
-      for (var i = 0; i < homeAnalysisData.groupOpponents.length; i++) {
-        var opp = homeAnalysisData.groupOpponents[i];
-        if (opp.code === awayCode && opp.matches && opp.matches.length > 0) {
-          parts.push('H2H: ' + opp.h2hSummary);
-          break;
+    // H2H bonus
+    if (homeH2H !== 0 || awayH2H !== 0) {
+      var homeAnalysisData = analysis[homeId] || {};
+      if (homeAnalysisData.groupOpponents) {
+        var awayCode = getTeamCode(awayId);
+        for (var i = 0; i < homeAnalysisData.groupOpponents.length; i++) {
+          var opp = homeAnalysisData.groupOpponents[i];
+          if (opp.code === awayCode && opp.matches && opp.matches.length > 0) {
+            parts.push('H2H: ' + opp.h2hSummary + ' (Elo-correctie: ' + (homeH2H > 0 ? '+' : '') + homeH2H + ')');
+            break;
+          }
+        }
+      }
+    } else {
+      // Fallback: toon H2H summary zonder bonus
+      var homeAnalysisData2 = analysis[homeId] || {};
+      if (homeAnalysisData2.groupOpponents) {
+        var awayCode2 = getTeamCode(awayId);
+        for (var j = 0; j < homeAnalysisData2.groupOpponents.length; j++) {
+          var opp2 = homeAnalysisData2.groupOpponents[j];
+          if (opp2.code === awayCode2 && opp2.matches && opp2.matches.length > 0) {
+            parts.push('H2H: ' + opp2.h2hSummary);
+            break;
+          }
         }
       }
     }
